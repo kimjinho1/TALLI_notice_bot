@@ -7,8 +7,6 @@ import datetime
 import json
 import os
 
-from utils import *
-
 """
 사람인 크롤링
 TODO: 1. CRA 
@@ -31,7 +29,9 @@ class Saramin:
 
     def crawling(self):
         url = f"{self.base_url}{self.query_list[0]}{self.search_words[0]}{self.query_list[1]}{1}"
-        print(url)
+        response = requests.get(url, headers=self.headers[0])
+        print(response.content)
+        # soup = BeautifulSoup(response.content, 'html.parser')
         # go = 1
         # page = 1
         # while go:
