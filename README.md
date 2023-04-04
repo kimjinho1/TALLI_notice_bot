@@ -42,6 +42,10 @@ EX) https://www.saramin.co.kr/zf_user/search/recruit?&recruitPageCount=40&search
 https://www.saramin.co.kr/zf_user/jobs/relay/view?...
 채용 공고 링크로 들어갔을 때 relay가 있어서 필요 없는 공고가 보여서 delay를 지운 링크로 진행함
 
-## 배운 점
+## 배운 점 . 
 BeautifulSoup로는 로딩이 끝나지 않은 요소들은 가져올 수 없다.  
 EX) 552건 검색완료 라고 나와야 되는데 ...건 검색완료로 저장됨  
+
+<li><span>전공</span>의/약학, 생명과학, 간호학</li> . 
+같은 경우 li.text의 결과가 "학, 생명과학, 간호학"이 아니라 
+"전공의/약학, 생명과학, 간호학"임. 추가로 처리 필요가 필요함  
