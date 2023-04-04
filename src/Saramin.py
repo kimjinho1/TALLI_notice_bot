@@ -20,19 +20,36 @@ TODO: 6. 메디컬라이터
 class Saramin:
     def __init__(self):
         self.save_dir = "result"
+        self.origin_url = "https://www.saramin.co.kr"
         self.base_url = "https://www.saramin.co.kr/zf_user/search/recruit?&recruitPageCount=40"
         self.search_words = ["CRA", "CRC", "연구간호사", "보건관리자", "보험심사", "메디컬라이터"]
-        self.query_list = ["&searchword=", "&recruitPage="]
-        self.headers = [{'User-Agent': UserAgent().ie}]
-        # self.headers = [{'User-Agent': "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:15.0) Gecko/20100101 Firefox/15.0.1"}]
+        # self.query_list = ["&searchword=", "&recruitPage="]
+        # 헤더에 유저 정보를 안 담으면 중간에 계속 차단되는 이슈가 있음
+        # self.headers = [{'User-Agent': UserAgent().ie}]
+        self.headers = [{'User-Agent': "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:15.0) Gecko/20100101 Firefox/15.0.1"}]
         self.today = datetime.datetime.today()
         self.data = {}
 
     def crawling(self):
-        url = f"{self.base_url}{self.query_list[0]}{self.search_words[0]}{self.query_list[1]}{1}"
-        response = requests.get(url, headers=self.headers[0])
-        soup = BeautifulSoup(response.content, 'html.parser')
-        print(soup)
+        page = 1
+        while True:
+            url = f"{self.base_url}&searchword={self.search_words[0]}&recruitPage={page}"
+            response = requests.get(url, headers=self.headers[0])
+            soup = BeautifulSoup(response.content, "lxml")
+            finish = soup.select_one(".info_no_result") 
+
+            # job_tit_list = soup.select("h2.job_tit a[href]") 
+            # job_tit_links = []
+            # for job_tit in job_tit_list:
+            #     job_tit_link = self.origin_url + job_tit["href"]
+            #     job_tit_links.append(job_tit_link)
+
+            # if finish is not None:
+            #     break
+
+            # page += 1
+            # break
+
         # go = 1
         # page = 1
         # while go:
