@@ -24,7 +24,3 @@ search: 검색 쿼리
 
 기준 URL: https://www.saramin.co.kr/zf_user/search/recruit?&recruitPageCount=40&searchword={키워드}&recruitPage={페이지}  
 EX) https://www.saramin.co.kr/zf_user/search/recruit?&recruitPageCount=40&searchword=CRA&recruitPage=1  
-
-**검색하고 나면 552건 완료 같은 방식으로 총 개수가 나와서 총 페이지 수를 알 수 있음**  
-**첫 페이지는 무조건 있으니 첫 페이지 크롤링 할 때 전체 페이지 수를 저장함**  
-EX) max_page = 552 // 40 = 14  
