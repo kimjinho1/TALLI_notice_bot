@@ -28,7 +28,7 @@ class Saramin:
         self.data = {}
 
     def crawling(self):
-        print("Start");
+        print("Start")
         # go = 1
         # page = 1
         # while go:
