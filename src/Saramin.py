@@ -18,8 +18,11 @@ TODO: 사람인 크롤링
 
 수집 항목
 - URL
-- 공고명
 - 기업명
+- 스크랩 수
+
+TODO:
+- 공고명
 - 경력
 - 학력
 - 근무형태
@@ -46,80 +49,33 @@ class Saramin:
     def crawling(self):
         page = 1
         while True:
-            url = f"{self.base_url}&searchword={self.search_words[0]}&recruitPage={page}"
-            response = requests.get(url, headers=self.headers[0])
-            soup = BeautifulSoup(response.content, "lxml")
-            finish = soup.select_one(".info_no_result") 
+            search_url = f"{self.base_url}&searchword={self.search_words[0]}&recruitPage={page}"
+            search_response = requests.get(search_url, headers=self.headers[0])
+            search_soup = BeautifulSoup(search_response.content, "lxml")
 
-            job_tit_list = soup.select("h2.job_tit a[href]") 
+            # 마지막 페이지 확인
+            finish = search_soup.select_one("div.info_no_result") 
+            if finish is not None:
+                break
+
+            # 채용 공고 링크 리스트 추출[40개]
+            job_tit_list = search_soup.select("h2.job_tit a[href]") 
             job_tit_links = []
             for job_tit in job_tit_list:
                 job_tit_link = self.origin_url + job_tit["href"]
                 job_tit_links.append(job_tit_link)
 
-            if finish is not None:
+            for link in job_tit_links:
+                url = link.replace("relay/", "")
+                response = requests.get(url, headers=self.headers[0])
+                soup = BeautifulSoup(response.content, "lxml")
+
+                company = soup.select_one("div.title_inner a.company").text.strip()
+                scrap_count = soup.select_one("div.jv_header span.txt_scrap").text.strip()
                 break
 
             page += 1
             break
-
-        # go = 1
-        # page = 1
-        # while go:
-        #     data = {}
-        #     params = {'id': 'stockus', 'page': page}
-            
-        #     response = requests.get(self.base_url, params=params, headers=self.headers[0])    
-        #     soup = BeautifulSoup(response.content, 'html.parser')
-            
-        #     article_list = soup.find('tbody').select('tr')
-                
-        #     cnt = 0
-        #     for tr_item in article_list:
-        #         title_subject = tr_item.select('.gall_subject')[0].text
-        #         if title_subject != "일반":
-        #             continue
-                
-        #         date = tr_item.select('.gall_date')[0].text
-        #         if '.' not in date:
-        #             continue
-        #         elif date == month_day_format(self.two_days_ago):
-        #             go = 0
-        #             break
-                
-        #         title_tag = tr_item.find('a', href=True)
-        #         title = title_tag.text
-
-        #         article_response = requests.get(self.article_base_url + title_tag['href'], headers=self.headers[0])
-        #         article_url = article_response.url
-                
-        #         article_id = (title_tag['href'].split('no=')[1]).split('&')[0]
-
-        #         article_soup = BeautifulSoup(article_response.content, 'html.parser')
-
-        #         writer_nickname = article_soup.find('span', class_='nickname').text
-                
-        #         reporting_date, reporting_time = article_soup.find('span', class_='gall_date').text.split()
-
-        #         up_num = article_soup.find('p', class_='up_num').text
-                
-        #         down_num = article_soup.find('p', class_='down_num').text
-
-        #         article_contents = article_soup.find('div', class_='write_div').text.strip()
-                        
-        #         data = {
-        #             "title" : title,
-        #             "article_url": article_url,
-        #             "writer_nickname": writer_nickname,
-        #             "reporting_date": reporting_date,
-        #             "reporting_time": reporting_time,
-        #             "up_num": up_num,
-        #             "down_num": down_num,
-        #             "article_contents": article_contents,
-        #         }                
-
-        #         self.article_data[article_id] = data
-        #         time.sleep(0.5)
 
 
     def save_result(self, keyword):
