@@ -68,21 +68,26 @@ class Saramin:
                 job_tit_links.append(job_tit_link)
 
             for link in job_tit_links:
+                # url
                 url = link.replace("relay/", "")
                 response = requests.get(url, headers=self.headers[0])
                 soup = BeautifulSoup(response.content, "lxml")
 
+                # 회사, 공고명, 스크랩 수
                 company = soup.select_one("div.title_inner a.company").text.strip()
-                scrap_count = soup.select_one("div.jv_header span.txt_scrap").text.strip()
                 title = soup.select_one("h1.tit_job").text.strip()
-                preferred_dict = {}
+                scrap_count = soup.select_one("div.jv_header span.txt_scrap").text.strip()
 
+                # 우대사항
+                preferred_dict = {}
                 preferred_list = soup.select("dd.preferred ul.toolTipTxt li")
                 for li in preferred_list:
                     key = li.select_one("span").text.strip()
                     val = li.text[len(key):].strip()
                     preferred_dict[key] = val
-                print(preferred_dict)
+
+                                   
+
                 break
 
             page += 1
