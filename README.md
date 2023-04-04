@@ -51,5 +51,8 @@ https://www.saramin.co.kr/zf_user/jobs/relay/view?...
 BeautifulSoup로는 로딩이 끝나지 않은 요소들은 가져올 수 없었다.  
 EX) 552건 검색 완료라고 나와야 하는데, ...건 검색 완료로 저장됨  
 
+가끔 텍스트가 없고 상세보기 버튼만 있는 경우가 있었음.  
+처리 완료!  
+
 가끔 \xao 문자가 들어오는데, non-breaking space(Latin1,chr(160) 인코딩 형)라고 함.  
 단순하게 replace('\\xa0', ' ') 방식으로 지울 수 있다.  
