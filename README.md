@@ -1,5 +1,7 @@
 TALLI notice bot
 
+private라 위키가 없어서 여기다 
+
 ## 사람인 크롤링  
 **키워드**  
 1. CRA  
