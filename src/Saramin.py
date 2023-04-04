@@ -24,14 +24,15 @@ class Saramin:
         self.search_words = ["CRA", "CRC", "연구간호사", "보건관리자", "보험심사", "메디컬라이터"]
         self.query_list = ["&searchword=", "&recruitPage="]
         self.headers = [{'User-Agent': UserAgent().ie}]
+        # self.headers = [{'User-Agent': "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:15.0) Gecko/20100101 Firefox/15.0.1"}]
         self.today = datetime.datetime.today()
         self.data = {}
 
     def crawling(self):
         url = f"{self.base_url}{self.query_list[0]}{self.search_words[0]}{self.query_list[1]}{1}"
         response = requests.get(url, headers=self.headers[0])
-        print(response.content)
-        # soup = BeautifulSoup(response.content, 'html.parser')
+        soup = BeautifulSoup(response.content, 'html.parser')
+        print(soup)
         # go = 1
         # page = 1
         # while go:
