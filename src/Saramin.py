@@ -7,6 +7,8 @@ import datetime
 import json
 import os
 
+from utils import *
+
 """
 사람인 크롤링
 TODO: 1. CRA 
@@ -22,7 +24,7 @@ class Saramin:
         self.save_dir = "result"
         self.base_url = "https://www.saramin.co.kr/zf_user/search/recruit?&recruitPageCount=40"
         self.search_words = ["CRA", "CRC", "연구간호사", "보건관리자", "보험심사", "메디컬라이터"]
-        self.query_list = ["searchword", "recruitPage"]
+        self.query_list = ["&searchword=", "&recruitPage="]
         self.headers = [{'User-Agent': UserAgent().ie}]
         self.today = datetime.datetime.today()
         self.data = {}
