@@ -20,9 +20,11 @@ TODO: 사람인 크롤링
 - URL
 - 기업명
 - 스크랩 수
+- 공고명
+
+- 우대사항
 
 TODO:
-- 공고명
 - 경력
 - 학력
 - 근무형태
@@ -72,6 +74,15 @@ class Saramin:
 
                 company = soup.select_one("div.title_inner a.company").text.strip()
                 scrap_count = soup.select_one("div.jv_header span.txt_scrap").text.strip()
+                title = soup.select_one("h1.tit_job").text.strip()
+                preferred_dict = {}
+
+                preferred_list = soup.select("dd.preferred ul.toolTipTxt li")
+                for li in preferred_list:
+                    key = li.select_one("span").text.strip()
+                    val = li.text[len(key):].strip()
+                    preferred_dict[key] = val
+                print(preferred_dict)
                 break
 
             page += 1
