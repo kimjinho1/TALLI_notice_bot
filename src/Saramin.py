@@ -44,11 +44,10 @@ class Saramin:
             #     job_tit_link = self.origin_url + job_tit["href"]
             #     job_tit_links.append(job_tit_link)
 
-            # if finish is not None:
-            #     break
+            if finish is not None:
+                break
 
-            # page += 1
-            # break
+            page += 1
 
         # go = 1
         # page = 1
