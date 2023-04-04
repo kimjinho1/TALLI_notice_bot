@@ -1,6 +1,6 @@
 TALLI notice bot
 
-private라 위키가 없어서 여기다 작성할게용
+private라 위키가 없어서 여기다 작성할게용ㅎㅎ  
 
 ## 사람인 크롤링  
 **키워드**  
