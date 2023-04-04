@@ -11,6 +11,19 @@ private라 위키가 없어서 여기다 작성할게용ㅎㅎ
 5. 보험심사  
 6. 메디컬라이터  
 
+수집 항목
+- URL
+- 공고명
+- 기업명
+- 경력
+- 학력
+- 근무형태
+- 급여
+- 근무일시
+- 근무지역
+- 접수 시작일
+- 접수 마감일
+
 ### URL 파악  
 처음에 채용 페이지가 [1, 2, 3] 같은 식이 아닌 "더보기"로 되어 있어서 더보기를 실행한 주소를 기준으로 진행함  
 기본 URL: https://www.saramin.co.kr/zf_user/search/recruit?&recruitPageCount=40&searchword=CRA&recruitPage=1&recruitSort=relation  
