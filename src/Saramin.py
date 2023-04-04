@@ -30,7 +30,8 @@ class Saramin:
         self.data = {}
 
     def crawling(self):
-        print("Start")
+        url = f"{self.base_url}{self.query_list[0]}{self.search_words[0]}{self.query_list[1]}{1}"
+        print(url)
         # go = 1
         # page = 1
         # while go:
