@@ -8,13 +8,13 @@ import json
 import os
 
 """
-사람인 크롤링
-TODO: 1. CRA 
-TODO: 2. CRC
-TODO: 3. 연구간호사
-TODO: 4. 보건관리자
-TODO: 5. 보험심사
-TODO: 6. 메디컬라이터
+TODO: 사람인 크롤링
+1. CRA 
+2. CRC
+3. 연구간호사
+4. 보건관리자
+5. 보험심사
+6. 메디컬라이터
 """
 
 class Saramin:
