@@ -38,16 +38,17 @@ class Saramin:
             soup = BeautifulSoup(response.content, "lxml")
             finish = soup.select_one(".info_no_result") 
 
-            # job_tit_list = soup.select("h2.job_tit a[href]") 
-            # job_tit_links = []
-            # for job_tit in job_tit_list:
-            #     job_tit_link = self.origin_url + job_tit["href"]
-            #     job_tit_links.append(job_tit_link)
+            job_tit_list = soup.select("h2.job_tit a[href]") 
+            job_tit_links = []
+            for job_tit in job_tit_list:
+                job_tit_link = self.origin_url + job_tit["href"]
+                job_tit_links.append(job_tit_link)
 
             if finish is not None:
                 break
 
             page += 1
+            break
 
         # go = 1
         # page = 1
