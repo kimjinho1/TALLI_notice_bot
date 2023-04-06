@@ -55,20 +55,20 @@ class Saramin:
 
 
     def crawling(self):
-        # columns = ["url", "기업명", "기업명", "스크랩 수", "경력", "학력", "근무형태", "급여", "근무지역", "필수사항", "우대사항", "접수 시작일", "접수 마감일"]
-
         for search_word in self.search_words:
-            page = 1
-            search_url = f"{self.base_url}&searchword={search_word}&recruitPage={page}"
-            # result = pd.DataFrame(columns=columns)
+            page = 14
+            idx = 0
+            # columns = ["url", "기업명", "기업명", "스크랩 수", "경력", "학력", "근무형태", "급여", "근무지역", "필수사항", "우대사항", "접수 시작일", "접수 마감일"]
             result = pd.DataFrame()
             while True:
+                search_url = f"{self.base_url}&searchword={search_word}&recruitPage={page}"
                 search_response = requests.get(search_url, headers=self.headers[0])
                 search_soup = BeautifulSoup(search_response.content, "lxml")
 
                 # 마지막 페이지 확인
                 finish = search_soup.select_one("div.info_no_result") 
                 if finish is not None:
+                    finish
                     break
 
                 # 채용 공고 링크 리스트 추출[40개]
@@ -79,7 +79,6 @@ class Saramin:
                     job_tit_links.append(job_tit_link)
 
                 # 채용 공고 페이지로 이동
-                idx = 0
                 for link in job_tit_links:
                     # url
                     url = link.replace("relay/", "")
@@ -154,8 +153,8 @@ class Saramin:
                     result = pd.concat([result, pd.DataFrame(data, index=[idx])])
                     idx += 1
                     # print_data(data)
+                self.save_to_csv(result, search_word)
                 page += 1
-            self.save_to_csv(result, search_word)
 
 
     def save_to_csv(self, df, keyword):
