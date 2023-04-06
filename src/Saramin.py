@@ -7,8 +7,10 @@ import datetime
 import json
 import os
 
+from utils import *
+
 """
-TODO: 사람인 크롤링
+사람인 크롤링
 1. CRA 
 2. CRC
 3. 연구간호사
@@ -51,6 +53,7 @@ class Saramin:
         self.today = datetime.datetime.today()
         self.data = {}
 
+
     def crawling(self):
         for search_word in self.search_words:
             page = 1
@@ -80,9 +83,9 @@ class Saramin:
                     soup = BeautifulSoup(response.content, "lxml")
 
                     # 회사, 공고명, 스크랩 수
-                    company = soup.select_one("div.title_inner a.company").text.strip().replace('\\xa0', ' ')
-                    title = soup.select_one("h1.tit_job").text.strip().replace('\\xa0', ' ')
-                    scrap_count = soup.select_one("div.jv_header span.txt_scrap").text.strip().replace('\\xa0', ' ')
+                    company = text_filter(soup.select_one("div.title_inner a.company").text)
+                    title = text_filter(soup.select_one("h1.tit_job").text)
+                    scrap_count = text_filter(soup.select_one("div.jv_header span.txt_scrap").text)
 
                     # 경력, 학력, 근무형태, 급여, 근무일시, 근무지역 추출
                     # 필수사항, 우대사항, 직급/직책은 없는 경우 있긴 하지만 일단 추출함
@@ -90,17 +93,17 @@ class Saramin:
                     summary_dict = {}
                     summary_list = soup.select("div.jv_summary div.col dl")
                     for li in summary_list:
-                        key = li.select_one("dt").text.strip().replace('\\xa0', ' ')
+                        key = text_filter(li.select_one("dt").text)
                         dd_tag = li.select_one("dd")
-                        dd_first_str = str(next(dd_tag.stripped_strings)).strip().replace('\\xa0', ' ')
+                        dd_first_str = text_filter(str(next(dd_tag.stripped_strings)))
                         details = dd_tag.select("ul.toolTipTxt li")
                         details_str = ""
                         # 상세보기가 있는 경우
                         if details:
                             for detail in details:
-                                detail_key = detail.select_one("span").text.strip().replace('\\xa0', ' ')
+                                detail_key = text_filter(detail.select_one("span").text)
                                 detail_key = "".join(detail_key.split())
-                                detail_val = detail.text.strip().replace('\\xa0', ' ')[len(detail_key):]
+                                detail_val = text_filter(detail.text[len(detail_key):])
                                 if details_str == "":
                                     details_str += f"{detail_key}:{detail_val}"
                                 else:
@@ -109,10 +112,10 @@ class Saramin:
                         if key == dd_first_str:
                             val = details_str
                         else:
-                            val = dd_tag.text.strip().replace('\\xa0', ' ')
+                            val = dd_tag.text
                             # 기본 텍스트, 상세보기 둘 다 있는 경우
                             if details:
-                                details_origin_str = li.select_one("dd").select_one("div.toolTipWrap").text
+                                details_origin_str = text_filter(li.select_one("dd").select_one("div.toolTipWrap").text)
                                 val = val[:-len(details_origin_str) + len(details) + 1]
                         summary_dict[key] = val
 
@@ -123,10 +126,10 @@ class Saramin:
 
                     period_list = soup.select("dl.info_period dd") 
                     # YYYY.MM.DD HH:MM 형식
-                    start = period_list[0].text.strip().replace('\\xa0', ' ')
+                    start = text_filter(period_list[0].text)
                     # 마감일은 없는 경우 있음
                     if len(period_list) == 2:
-                        end = period_list[1].text.strip().replace('\\xa0', ' ')
+                        end = text_filter(period_list[1].text)
                     else:
                         end = "채용시 마감"
 
@@ -155,7 +158,3 @@ class Saramin:
             json.dump(self.data, json_file, ensure_ascii=False, indent='\t')
         print(f"===== Save {filename}  =====\n")
 
-
-    def check_result(self):
-        for value in self.data.values():
-            print(value)
