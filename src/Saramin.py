@@ -56,7 +56,7 @@ class Saramin:
 
     def crawling(self):
         for search_word in self.search_words:
-            page = 14
+            page = 1
             idx = 0
             # columns = ["url", "기업명", "기업명", "스크랩 수", "경력", "학력", "근무형태", "급여", "근무지역", "필수사항", "우대사항", "접수 시작일", "접수 마감일"]
             result = pd.DataFrame()
