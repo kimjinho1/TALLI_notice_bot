@@ -4,4 +4,3 @@ from Saramin import Saramin
 if __name__ == "__main__":
     saramin_crawler = Saramin()
     saramin_crawler.crawling()
-    # saramin_crawler.save_result()

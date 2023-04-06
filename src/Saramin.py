@@ -1,10 +1,10 @@
 import requests
 from fake_useragent import UserAgent
 from bs4 import BeautifulSoup
-from tqdm.auto import tqdm
 import time
 import datetime
 import json
+import pandas as pd
 import os
 
 from utils import *
@@ -55,10 +55,13 @@ class Saramin:
 
 
     def crawling(self):
+        # columns = ["url", "기업명", "기업명", "스크랩 수", "경력", "학력", "근무형태", "급여", "근무지역", "필수사항", "우대사항", "접수 시작일", "접수 마감일"]
+
         for search_word in self.search_words:
             page = 1
             search_url = f"{self.base_url}&searchword={search_word}&recruitPage={page}"
-
+            # result = pd.DataFrame(columns=columns)
+            result = pd.DataFrame()
             while True:
                 search_response = requests.get(search_url, headers=self.headers[0])
                 search_soup = BeautifulSoup(search_response.content, "lxml")
@@ -76,6 +79,7 @@ class Saramin:
                     job_tit_links.append(job_tit_link)
 
                 # 채용 공고 페이지로 이동
+                idx = 0
                 for link in job_tit_links:
                     # url
                     url = link.replace("relay/", "")
@@ -112,7 +116,7 @@ class Saramin:
                         if key == dd_first_str:
                             val = details_str
                         else:
-                            val = dd_tag.text
+                            val = text_filter(dd_tag.text)
                             # 기본 텍스트, 상세보기 둘 다 있는 경우
                             if details:
                                 details_origin_str = text_filter(li.select_one("dd").select_one("div.toolTipWrap").text)
@@ -133,28 +137,41 @@ class Saramin:
                     else:
                         end = "채용시 마감"
 
-                    print("search_word:", search_word)
-                    print("page:", page)
-                    print("url:", url)
-                    print("company:", company)
-                    print("title:", title)
-                    print("scrap_count:", scrap_count)
-                    for k, v in summary_dict.items():
-                        print(f"{k}: {v}")
-                    print("start:", start)
-                    print("end:", end)
-                    print()
-                    break
-                    
+                    data = {"url": url,
+                            "기업명": company,
+                            "공고명": title,
+                            "스크랩 수": scrap_count,
+                            "경력": summary_dict.get("경력", "X"),
+                            "학력": summary_dict.get("학력", "X"),
+                            "근무형태": summary_dict.get("근무형태", "X"),
+                            "급여": summary_dict.get("급여", "X"),
+                            "근무지역": summary_dict.get("근무지역", "X"),
+                            "필수사항": summary_dict.get("필수사항", "X"),
+                            "우대사항": summary_dict.get("우대사항", "X"),
+                            "접수 시작일": start,
+                            "접수 마감일": end,
+                    }
+                    result = pd.concat([result, pd.DataFrame(data, index=[idx])])
+                    idx += 1
+                    # print_data(data)
                 page += 1
-                break
+            self.save_to_csv(result, search_word)
 
 
-    def save_result(self, keyword):
-        filename = f"{keyword}.json"
+    def save_to_csv(self, df, keyword):
+        file_name = f"{keyword}.csv"
         if not os.path.isdir(self.save_dir):
             os.makedirs(self.save_dir)                    
-        with open(os.path.join(self.save_dir, filename), 'w', encoding='utf-8') as json_file:
-            json.dump(self.data, json_file, ensure_ascii=False, indent='\t')
-        print(f"===== Save {filename}  =====\n")
+        file_path = os.path.join(self.save_dir, file_name)
+        df.to_csv(file_path, index=False, encoding='utf-8-sig')
+        print(f'{file_name} is saved at {file_path}')
 
+
+    def save_to_json(self, keyword):
+        file_name = f"{keyword}.json"
+        if not os.path.isdir(self.save_dir):
+            os.makedirs(self.save_dir)                    
+        file_path = os.path.join(self.save_dir, file_name)
+        with open(file_path, 'w', encoding='utf-8') as json_file:
+            json.dump(self.data, json_file, ensure_ascii=False, indent='\t')
+        print(f'{file_name} is saved at {file_path}')
