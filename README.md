@@ -1,7 +1,4 @@
-TALLI notice bot
-
-private라 위키가 없어서 여기다 작성했습니다ㅎㅎ  
-일단 싹다 추출만 해놓은 상태입니다.  
+#TALLI notice bot
 
 # 사람인 크롤링  
 **키워드**  
