@@ -38,8 +38,8 @@ search: 검색 쿼리
 * recruitSort: 검색 결과 정렬 -> recruitSort=relation  
 수집이 목표니까 필요 없어 보임  
 
-기준 URL: https://www.saramin.co.kr/zf_user/search/recruit?&recruitPageCount=40&searchword={키워드}&recruitPage={페이지}  
-EX) https://www.saramin.co.kr/zf_user/search/recruit?&recruitPageCount=40&searchword=CRA&recruitPage=1  
+기준 URL: https://www.saramin.co.kr/zf_user/search/recruit?&recruitPageCount=40&&recruitSort=reg_dt&searchword={키워드}&recruitPage={페이지}  
+EX) https://www.saramin.co.kr/zf_user/search/recruit?&recruitPageCount=40&&recruitSort=reg_dt&searchword=CRA&recruitPage=1  
 
 ## 이슈였던 것들 
 https://www.saramin.co.kr/zf_user/jobs/relay/view?...  
