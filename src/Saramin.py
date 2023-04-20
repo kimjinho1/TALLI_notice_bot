@@ -41,18 +41,16 @@ from utils import *
 """
 
 class Saramin:
-    def __init__(self):
+    # mode: all -> 오늘 꺼 빼고 다, today -> 오늘 꺼만
+    def __init__(self, mode):
+        self.mode = mode
         self.save_dir = "result"
         self.origin_url = "https://www.saramin.co.kr"
-        self.base_url = "https://www.saramin.co.kr/zf_user/search/recruit?&recruitPageCount=40"
+        self.base_url = "https://www.saramin.co.kr/zf_user/search/recruit?&recruitPageCount=40&recruitSort=reg_dt"
         self.search_words = ["CRA", "CRC", "연구간호사", "보건관리자", "보험심사", "메디컬라이터"]
-        # self.query_list = ["&searchword=", "&recruitPage="]
         # 헤더에 유저 정보를 안 담으면 중간에 계속 차단되는 이슈가 있음
         # self.headers = [{'User-Agent': UserAgent().ie}]
         self.headers = [{'User-Agent': "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:15.0) Gecko/20100101 Firefox/15.0.1"}]
-        self.today = datetime.datetime.today()
-        self.data = {}
-
 
     def crawling(self):
         for search_word in self.search_words:
@@ -72,11 +70,19 @@ class Saramin:
                     break
 
                 # 채용 공고 링크 리스트 추출[40개]
-                job_tit_list = search_soup.select("h2.job_tit a[href]") 
                 job_tit_links = []
-                for job_tit in job_tit_list:
+                area_jobs = search_soup.select("div.area_job") 
+                for area_job in area_jobs:
+                    job_day = area_job.select_one("span.job_day")
+                    job_day_text = text_filter(job_day.text)
+                    # 같은 날인지 확인
+                    res = check_same_day(job_day_text)
+                    if (self.mode == "today" and res == False) or (self.mode == "all" and res == True):
+                        continue
+                    job_tit = area_job.select_one("h2.job_tit a[href]")
                     job_tit_link = self.origin_url + job_tit["href"]
                     job_tit_links.append(job_tit_link)
+                    
 
                 # 채용 공고 페이지로 이동
                 for link in job_tit_links:
@@ -86,9 +92,15 @@ class Saramin:
                     soup = BeautifulSoup(response.content, "lxml")
 
                     # 회사, 공고명, 스크랩 수
-                    company = text_filter(soup.select_one("div.title_inner a.company").text)
-                    title = text_filter(soup.select_one("h1.tit_job").text)
-                    scrap_count = text_filter(soup.select_one("div.jv_header span.txt_scrap").text)
+                    company = soup.select_one("div.title_inner a.company")
+                    title = soup.select_one("h1.tit_job")
+                    scrap_count = soup.select_one("div.jv_header span.txt_scrap")
+                    if not company or not title or not scrap_count:
+                        continue
+
+                    company_text = text_filter(company.text)
+                    title_text = text_filter(title.text)
+                    scrap_count_text = text_filter(scrap_count.text)
 
                     # 경력, 학력, 근무형태, 급여, 근무일시, 근무지역 추출
                     # 필수사항, 우대사항, 직급/직책은 없는 경우 있긴 하지만 일단 추출함
@@ -137,9 +149,9 @@ class Saramin:
                         end = "채용시 마감"
 
                     data = {"url": url,
-                            "기업명": company,
-                            "공고명": title,
-                            "스크랩 수": scrap_count,
+                            "기업명": company_text,
+                            "공고명": title_text,
+                            "스크랩 수": scrap_count_text,
                             "경력": summary_dict.get("경력", "X"),
                             "학력": summary_dict.get("학력", "X"),
                             "근무형태": summary_dict.get("근무형태", "X"),
