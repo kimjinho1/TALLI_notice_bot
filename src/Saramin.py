@@ -170,7 +170,7 @@ class Saramin:
 
 
     def save_to_csv(self, df, keyword):
-        file_name = f"{keyword}.csv"
+        file_name = f"{keyword}.csv"  if self.mode == "all" else f"{keyword}-{get_current_date().replace('/', '-')}.csv" 
         if not os.path.isdir(self.save_dir):
             os.makedirs(self.save_dir)                    
         file_path = os.path.join(self.save_dir, file_name)
