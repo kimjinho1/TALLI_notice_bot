@@ -1,8 +1,5 @@
 import requests
-from fake_useragent import UserAgent
 from bs4 import BeautifulSoup
-import time
-import datetime
 import json
 import pandas as pd
 import os
@@ -41,16 +38,16 @@ from utils import *
 """
 
 class Saramin:
-    # mode: all -> 오늘 꺼 빼고 다, today -> 오늘 꺼만
-    def __init__(self, mode):
-        self.mode = mode
+    def __init__(self, day, save):
+        self.day = day
+        self.save = save
         self.save_dir = "result"
         self.origin_url = "https://www.saramin.co.kr"
         self.base_url = "https://www.saramin.co.kr/zf_user/search/recruit?&recruitPageCount=40&recruitSort=reg_dt"
         self.search_words = ["CRA", "CRC", "연구간호사", "보건관리자", "보험심사", "메디컬라이터"]
         # 헤더에 유저 정보를 안 담으면 중간에 계속 차단되는 이슈가 있음
-        # self.headers = [{'User-Agent': UserAgent().ie}]
         self.headers = [{'User-Agent': "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:15.0) Gecko/20100101 Firefox/15.0.1"}]
+        self.data = []
 
     def crawling(self):
         for search_word in self.search_words:
@@ -77,7 +74,7 @@ class Saramin:
                     job_day_text = text_filter(job_day.text)
                     # 같은 날인지 확인
                     res = check_same_day(job_day_text)
-                    if (self.mode == "today" and res == False) or (self.mode == "all" and res == True):
+                    if (self.day == "today" and res == False) or (self.day == "all" and res == True):
                         continue
                     job_tit = area_job.select_one("h2.job_tit a[href]")
                     job_tit_link = self.origin_url + job_tit["href"]
@@ -148,29 +145,58 @@ class Saramin:
                     else:
                         end = "채용시 마감"
 
-                    data = {"url": url,
-                            "기업명": company_text,
-                            "공고명": title_text,
-                            "스크랩 수": scrap_count_text,
-                            "경력": summary_dict.get("경력", "X"),
-                            "학력": summary_dict.get("학력", "X"),
-                            "근무형태": summary_dict.get("근무형태", "X"),
-                            "급여": summary_dict.get("급여", "X"),
-                            "근무지역": summary_dict.get("근무지역", "X"),
-                            "필수사항": summary_dict.get("필수사항", "X"),
-                            "우대사항": summary_dict.get("우대사항", "X"),
-                            "접수 시작일": start,
-                            "접수 마감일": end,
+                    # data = {"키워드": search_word,
+                    #         "기업명": company_text,
+                    #         "공고명": title_text,
+                    #         "스크랩 수": scrap_count_text,
+                    #         "경력": summary_dict.get("경력", "X"),
+                    #         "학력": summary_dict.get("학력", "X"),
+                    #         "근무형태": summary_dict.get("근무형태", "X"),
+                    #         "급여": summary_dict.get("급여", "X"),
+                    #         "근무지역": summary_dict.get("근무지역", "X"),
+                    #         "필수사항": summary_dict.get("필수사항", "X"),
+                    #         "우대사항": summary_dict.get("우대사항", "X"),
+                    #         "접수 시작일": start,
+                    #         "접수 마감일": end,
+                    #         "url": url,
+                    # }
+                    data = {
+                            "title": title_text, # 공고명
+                            # titleImageUrl, 
+                            # companyId, 
+                            "companyName": company_text, # 회사 이름
+                            "category": search_word, # 직종(검색 단어)
+                            "start": start, # 시작일
+                            "deadline": end, # 마감일
+                            "scrapCount": scrap_count_text, # 스크랩 수
+                            "experience": summary_dict.get("경력", "X"), # 경력
+                            "education": summary_dict.get("학력", "X"), # 학력
+                            "requirements": summary_dict.get("필수사항", "X"), # 필수사항
+                            "preferences": summary_dict.get("우대사항", "X"), # 우대사항
+                            "salary": summary_dict.get("급여", "X"), # 급여
+                            "jobType": summary_dict.get("근무형태", "X"), # 근무형태
+                            "jobLocation": summary_dict.get("근무지역", "X"), # 근무지역
+                            # details
+                            # detailsImageUrl
+                            "jobWebsite": url, # url(채용 공고 홈페이지)
                     }
                     result = pd.concat([result, pd.DataFrame(data, index=[idx])])
                     idx += 1
-                    # print_data(data)
-                self.save_to_csv(result, search_word)
+                    if (idx >= 20):
+                        break                       
+                if idx >= 20:
+                    break
                 page += 1
 
+            if self.save == True:
+                self.save_to_csv(result, search_word)
+            self.data.append(result)
+
+    def get_data(self):
+        return self.data
 
     def save_to_csv(self, df, keyword):
-        file_name = f"{keyword}.csv"  if self.mode == "all" else f"{keyword}-{get_current_date().replace('/', '-')}.csv" 
+        file_name = f"{keyword}.csv"  if self.day == "all" else f"{keyword}-{get_current_date().replace('/', '-')}.csv" 
         if not os.path.isdir(self.save_dir):
             os.makedirs(self.save_dir)                    
         file_path = os.path.join(self.save_dir, file_name)
