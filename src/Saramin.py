@@ -6,37 +6,6 @@ import os
 
 from utils import *
 
-"""
-사람인 크롤링
-1. CRA 
-2. CRC
-3. 연구간호사
-4. 보건관리자
-5. 보험심사
-6. 메디컬라이터
-
-수집 항목
-- URL
-- 기업명
-- 스크랩 수
-- 공고명
-
-- 경력
-- 학력
-- 근무형태
-- 급여
-- 근무일시
-
-없는 경우 있음
-- 근무지역
-- 필수사항
-- 우대사항
-
-- 접수 시작일
-마감일은 없는 경우도 있음 -> 채용시 마감
-- 접수 마감일
-"""
-
 class Saramin:
     def __init__(self, day, save):
         self.day = day
@@ -53,7 +22,6 @@ class Saramin:
         for search_word in self.search_words:
             page = 1
             idx = 0
-            # columns = ["url", "기업명", "기업명", "스크랩 수", "경력", "학력", "근무형태", "급여", "근무지역", "필수사항", "우대사항", "접수 시작일", "접수 마감일"]
             result = pd.DataFrame()
             while True:
                 search_url = f"{self.base_url}&searchword={search_word}&recruitPage={page}"
@@ -202,7 +170,6 @@ class Saramin:
         file_path = os.path.join(self.save_dir, file_name)
         df.to_csv(file_path, index=False, encoding='utf-8-sig')
         print(f'{file_name} is saved at {file_path}')
-
 
     def save_to_json(self, keyword):
         file_name = f"{keyword}.json"
