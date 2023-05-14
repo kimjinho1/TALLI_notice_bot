@@ -14,8 +14,7 @@ def check_same_day(job_day_text):
     if create_or_update == "수정일":
         return False
     # 등록일일 경우 date를 확인 -> 현재 날짜와 같은지 확인
-    # today_date = get_current_date()
-    today_date = get_yesterday_date()
+    today_date = get_current_date()
     if create_or_update == "등록일" and date != today_date:
         return False
     return True
@@ -25,7 +24,3 @@ def text_filter(text):
     while (text.find("  ") != -1):
         text = text.replace("  ", " ")
     return text
-
-if __name__ == "__main__":
-    print(get_yesterday_date())
-    print(get_current_date())
