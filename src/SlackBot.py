@@ -1,10 +1,11 @@
-import os 
+import os
 from dotenv import load_dotenv
 from slack_bolt import App
 from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
 
 load_dotenv(verbose=True)
+
 
 class SlackBot:
     def __init__(self):
@@ -29,9 +30,10 @@ class SlackBot:
         except SlackApiError as e:
             print(f"Error sending message: {e}")
             return None
-    
+
     def send_all_message(self, df):
         for i in range(len(df)):
+            if (i >= 20):
+                return
             message = self.make_message(df, i)
             self.send_message(message)
-            exit()
