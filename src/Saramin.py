@@ -124,7 +124,7 @@ class Saramin:
                     data = {"키워드": search_word,
                             "기업명": company_text,
                             "공고명": title_text,
-                            "스크랩 수": scrap_count_text,
+                            # "스크랩 수": scrap_count_text,
                             "경력": summary_dict.get("경력", "X"),
                             "학력": summary_dict.get("학력", "X"),
                             "근무형태": summary_dict.get("근무형태", "X"),
