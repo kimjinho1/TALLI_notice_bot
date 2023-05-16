@@ -39,4 +39,5 @@ class SlackBot:
                 return
             message = self.make_message(df, i)
             self.send_message(message)
+            self.cnt += 1
             time.sleep(10)
