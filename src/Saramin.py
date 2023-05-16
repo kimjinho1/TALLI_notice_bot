@@ -159,9 +159,9 @@ class Saramin:
                     result = pd.concat(
                         [result, pd.DataFrame(data, index=[idx])])
                     idx += 1
-                    if (idx >= 20):
+                    if (idx >= 10):
                         break
-                if idx >= 20:
+                if idx >= 10:
                     break
                 page += 1
 

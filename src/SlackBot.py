@@ -3,6 +3,7 @@ from dotenv import load_dotenv
 from slack_bolt import App
 from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
+import time
 
 load_dotenv(verbose=True)
 
@@ -12,9 +13,10 @@ class SlackBot:
         self.app = App(token=os.getenv("SLACK_BOT_TOKEN"))
         self.channel_id = os.getenv("SLACK_CHANNEL_ID")
         self.client = WebClient(token=os.getenv("SLACK_BOT_TOKEN"))
+        self.cnt = 1
 
     def make_message(self, df, idx):
-        message = ""
+        message = f"# {self.cnt}번째\n"
         cols = df.columns.tolist()
         for col in cols:
             message += f"{col}: {df.loc[idx, col]}\n"
@@ -33,7 +35,8 @@ class SlackBot:
 
     def send_all_message(self, df):
         for i in range(len(df)):
-            if (i >= 20):
+            if (i >= 10):
                 return
             message = self.make_message(df, i)
             self.send_message(message)
+            time.sleep(10)
