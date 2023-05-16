@@ -61,14 +61,18 @@ class Saramin:
                     # 회사, 공고명, 스크랩 수
                     company = soup.select_one("div.title_inner a.company")
                     title = soup.select_one("h1.tit_job")
-                    scrap_count = soup.select_one(
-                        "div.jv_header span.txt_scrap")
-                    if not company or not title or not scrap_count:
+                    # scrap_count = soup.select_one(
+                    #     "div.jv_header span.txt_scrap")
+                    # if not company or not title or not scrap_count:
+                    if not company or not title:
                         continue
 
                     company_text = text_filter(company.text)
                     title_text = text_filter(title.text)
-                    scrap_count_text = text_filter(scrap_count.text)
+                    # if scrap_count.text == "스크랩":
+                    #     scrap_count_text = "0"
+                    # else:
+                    #     scrap_count_text = text_filter(scrap_count.text)
 
                     # 경력, 학력, 근무형태, 급여, 근무일시, 근무지역 추출
                     # 필수사항, 우대사항, 직급/직책은 없는 경우 있긴 하지만 일단 추출함

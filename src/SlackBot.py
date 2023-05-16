@@ -19,7 +19,10 @@ class SlackBot:
         message = f"# {self.cnt}번째\n"
         cols = df.columns.tolist()
         for col in cols:
-            message += f"{col}: {df.loc[idx, col]}\n"
+            if col == 'url':
+                message += f"{col}: `{df.loc[idx, col]}`\n"
+            else:
+                message += f"{col}: {df.loc[idx, col]}\n"
         return message
 
     def send_message(self, message):
@@ -40,4 +43,4 @@ class SlackBot:
             message = self.make_message(df, i)
             self.send_message(message)
             self.cnt += 1
-            time.sleep(10)
+            time.sleep(30)
