@@ -40,7 +40,7 @@ search: 검색 쿼리
 채용 공고 링크로 들어갔을 때 relay 때문에 필요 없는 공고가 보여서 relay를 지운 링크로 진행함   
 https://www.saramin.co.kr/zf_user/jobs/relay/view?...   
 
-가끔 텍스트가 없고 상세보기 버튼만 있는 경우가 있었서 추가 적인 처리가 필요했음  
+가끔 텍스트가 없고 상세보기 버튼만 있는 경우가 있었서 추가적인 처리가 필요했음  
 
 가끔 \xao 문자가 들어오는데, non-breaking space(Latin1,chr(160) 인코딩 형)라고 함    
 단순하게 replace('\\xa0', ' ') 방식으로 처리    
