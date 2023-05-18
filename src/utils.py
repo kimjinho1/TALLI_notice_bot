@@ -1,16 +1,17 @@
 from datetime import datetime, timedelta
 
 
+# 어제 날짜 얻기
 def get_yesterday_date():
     yesterday = datetime.now() - timedelta(days=1)
     return yesterday.strftime("%y/%m/%d")
 
-
+# 오늘 날짜 얻기
 def get_current_date():
     now = datetime.now()
     return now.strftime("%y/%m/%d")
 
-
+# 같은 요일인지 확인
 def check_same_day(job_day_text):
     create_or_update, date = job_day_text.split()
     # 등록일, 수정일 확인 -> 등록일만 체크
@@ -22,7 +23,7 @@ def check_same_day(job_day_text):
         return False
     return True
 
-
+# 텍스트 필터링
 def text_filter(text):
     text = text.strip().replace("\\xa0", " ").replace("\n", '')
     while (text.find("  ") != -1):
