@@ -37,8 +37,8 @@ search: 검색 쿼리
 
 
 ## 이슈였던 것들 
-https://www.saramin.co.kr/zf_user/jobs/relay/view?...  
 채용 공고 링크로 들어갔을 때 relay 때문에 필요 없는 공고가 보여서 relay를 지운 링크로 진행함   
+https://www.saramin.co.kr/zf_user/jobs/relay/view?...   
 
 가끔 텍스트가 없고 상세보기 버튼만 있는 경우가 있었서 추가 적인 처리가 필요했음  
 
