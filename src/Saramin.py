@@ -13,13 +13,13 @@ class Saramin:
         self.save = save
         self.save_dir = "result"
         self.origin_url = "https://www.saramin.co.kr"
-        self.base_url = "https://www.saramin.co.kr/zf_user/search/recruit?&recruitPageCount=40&recruitSort=reg_dt"
+        self.base_url = "https://www.saramin.co.kr/zf_user/search/recruit?&recruitPageCount=30&recruitSort=relation"
         self.search_words = ["CRA", "CRC", "연구간호사", "보건관리자", "보험심사", "메디컬라이터"]
-        # 헤더에 유저 정보를 안 담으면 중간에 계속 차단되는 이슈가 있음
         self.headers = [
             {'User-Agent': "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:15.0) Gecko/20100101 Firefox/15.0.1"}]
         self.data = []
 
+    # 사람인 전체 크롤링
     def crawling(self):
         for search_word in self.search_words:
             page = 1
@@ -37,7 +37,7 @@ class Saramin:
                     finish
                     break
 
-                # 채용 공고 링크 리스트 추출[40개]
+                # 채용 공고 링크 리스트 추출[30개]
                 job_tit_links = []
                 area_jobs = search_soup.select("div.area_job")
                 for area_job in area_jobs:
@@ -165,7 +165,7 @@ class Saramin:
                     idx += 1
                     if (idx >= 10):
                         break
-                if idx >= 10:
+                if page >= 3 or idx >= 10:
                     break
                 page += 1
 
@@ -173,9 +173,11 @@ class Saramin:
                 self.save_to_csv(result, search_word)
             self.data.append(result)
 
+    # 데이터 Getter
     def get_data(self):
         return self.data
 
+    # 데이터 csv로 저장
     def save_to_csv(self, df, keyword):
         file_name = f"{keyword}.csv" if self.day == "all" else f"{keyword}-{get_current_date().replace('/', '-')}.csv"
         if not os.path.isdir(self.save_dir):
@@ -183,7 +185,23 @@ class Saramin:
         file_path = os.path.join(self.save_dir, file_name)
         df.to_csv(file_path, index=False, encoding='utf-8-sig')
         print(f'{file_name} is saved at {file_path}')
+        return file_path
 
+    # 모든 데이터 csv로 저장
+    def save_all_data_to_csv(self):
+        file_name = f"all-data.csv" if self.day == "all" else f"사람인-{get_current_date().replace('/', '-')}.csv"
+        if not os.path.isdir(self.save_dir):
+            os.makedirs(self.save_dir)
+        file_path = os.path.join(self.save_dir, file_name)
+        result = pd.DataFrame()
+        for df in self.data:
+            result = pd.concat(
+                [result, df])
+        result.to_csv(file_path, index=False, encoding='utf-8-sig')
+        print(f'{file_name} is saved at {file_path}')
+        return file_path
+
+    # 결과 json으로 저장
     def save_to_json(self, keyword):
         file_name = f"{keyword}.json"
         if not os.path.isdir(self.save_dir):
@@ -192,3 +210,4 @@ class Saramin:
         with open(file_path, 'w', encoding='utf-8') as json_file:
             json.dump(self.data, json_file, ensure_ascii=False, indent='\t')
         print(f'{file_name} is saved at {file_path}')
+        return file_path

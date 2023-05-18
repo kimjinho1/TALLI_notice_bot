@@ -15,6 +15,7 @@ class SlackBot:
         self.client = WebClient(token=os.getenv("SLACK_BOT_TOKEN"))
         self.cnt = 1
 
+    # 메시지 생성
     def make_message(self, df, idx):
         message = f"# {self.cnt}번째\n"
         cols = df.columns.tolist()
@@ -25,6 +26,7 @@ class SlackBot:
                 message += f"{col}: {df.loc[idx, col]}\n"
         return message
 
+    # 메시지 전송
     def send_message(self, message):
         try:
             response = self.client.chat_postMessage(
@@ -32,10 +34,11 @@ class SlackBot:
                 text=message
             )
             return response
-        except SlackApiError as e:
-            print(f"Error sending message: {e}")
+        except SlackApiError as error:
+            print(f"Error sending message: {error}")
             return None
 
+    # 모든 메시지 전송
     def send_all_message(self, df):
         for i in range(len(df)):
             if (i >= 10):
@@ -44,3 +47,17 @@ class SlackBot:
             self.send_message(message)
             self.cnt += 1
             time.sleep(30)
+
+    # 파일 전송
+    def send_file(self, file_path):
+        try:
+            response = self.client.files_upload_v2(
+                channel=self.channel_id,
+                file=file_path,
+            )
+            os.remove(file_path)
+            os.rmdir("result/")
+            return response
+        except SlackApiError as error:
+            print(f"Error sending message: {error}")
+            return None

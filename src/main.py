@@ -7,7 +7,10 @@ if __name__ == "__main__":
     # saramin = Saramin(day="today", save=True)
     saramin = Saramin(day="today", save=False)
     saramin.crawling()
-    data = saramin.get_data()
+    file_path = saramin.save_all_data_to_csv()
     slack_bot = SlackBot()
-    for df in data:
-        slack_bot.send_all_message(df)
+    # 파일로 전송
+    slack_bot.send_file(file_path)
+    # 메시지로 전송
+    # for df in data:
+        # slack_bot.send_all_message(df)
