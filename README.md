@@ -1,7 +1,7 @@
 # TALLI notice bot 
 
 ## 사람인 크롤링  
-** 사용 방법**
+**사용 방법**
 ~~~
 git clone https://github.com/Team-Salvador/TALLI_notice_bot.git
 cd TALLI_notice_bot
