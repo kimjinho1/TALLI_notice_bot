@@ -1,6 +1,18 @@
 # TALLI notice bot 
 
 ## 사람인 크롤링  
+** 사용 방법**
+~~~
+git clone https://github.com/Team-Salvador/TALLI_notice_bot.git
+cd TALLI_notice_bot
+echo 'SLACK_BOT_TOKEN = "슬랙봇 토큰"' >> .env
+echo 'SLACK_CHANNEL_ID = "슬랙 체널 아이디"' >> .env
+python3 -m venv TALLI_notice_bot
+source TALLI_notice_bot/bin/activate
+pip install -r requirements.txt
+python3 src/main.py
+~~~
+
 **키워드**  
 1. CRA  
 2. CRC  
