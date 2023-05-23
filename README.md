@@ -16,24 +16,22 @@
 - 공고명  
 - 경력  
 - 학력  
+- 근무지역  
+- 필수사항  
+- 우대사항  
 - 근무형태  
 - 급여  
 - 근무일시  
 - 접수 시작일  
-
-**없는 경우 있음**   
-- 근무지역  
-- 필수사항  
-- 우대사항  
 - 접수 마감일
 
+
 ## URL 파악  
-기준 URL: https://www.saramin.co.kr/zf_user/search/recruit?&recruitPageCount=40&&recruitSort=reg_dt&searchword={키워드}&recruitPage={페이지}  
-search: 검색 쿼리  
+기준 URL: https://www.saramin.co.kr/zf_user/search/recruit?&recruitPageCount=40&&recruitSort=relation&searchword={키워드}&recruitPage={페이지}  
 * searchword: 검색할 단어 -> searchword=CRA  
 * recruitPageCount: 한 페이지에 보여줄 채용 공고 개수 ->  recruitPageCount=30  
-* recruitPage: 검색 결과 페이지 번호 -> recruitPage=1  
-* recruitSort: 검색 결과 정렬 -> recruitSort=relation  
+* recruitPage: 페이지 번호 -> recruitPage=1  
+* recruitSort: 정렬(관련도) -> recruitSort=relation  
 
 
 ## 이슈였던 것들 
@@ -41,6 +39,5 @@ search: 검색 쿼리
 https://www.saramin.co.kr/zf_user/jobs/relay/view?...   
 
 가끔 텍스트가 없고 상세보기 버튼만 있는 경우가 있었서 추가적인 처리가 필요했음  
-
 가끔 \xao 문자가 들어오는데, non-breaking space(Latin1,chr(160) 인코딩 형)라고 함    
 단순하게 replace('\\xa0', ' ') 방식으로 처리    
