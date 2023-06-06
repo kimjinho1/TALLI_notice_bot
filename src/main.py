@@ -9,8 +9,9 @@ if __name__ == "__main__":
     saramin.crawling()
     file_path = saramin.save_all_data_to_csv()
     slack_bot = SlackBot()
-    # 파일로 전송
-    slack_bot.send_file(file_path)
-    # 메시지로 전송
-    # for df in data:
-        # slack_bot.send_all_message(df)
+    # 채용 공고 존재함 -> 파일 전송
+    if (file_path != ""): 
+        slack_bot.send_file(file_path)
+    # 채용 공고 없음 -> 메시지 전송
+    else:
+        slack_bot.send_message("오늘은 등록된 공고가 없습니다!")
