@@ -26,7 +26,7 @@ class Saramin:
             idx = 0
             result = pd.DataFrame()
             while True:
-                search_url = f"{self.base_url}&searchword={search_word}&recruitPage={page}"
+                search_url = f"{self.base_url}&searchword={search_word}&recruitPage={page}&except_read=&ai_head_hunting=&company_cd=0%2C1%2C2%2C3%2C4%2C5%2C6%2C7"
                 search_response = requests.get(
                     search_url, headers=self.headers[0])
                 search_soup = BeautifulSoup(search_response.content, "lxml")
@@ -197,6 +197,8 @@ class Saramin:
         for df in self.data:
             result = pd.concat(
                 [result, df])
+        if len(result) == 0:
+            return ""
         result.to_csv(file_path, index=False, encoding='utf-8-sig')
         print(f'{file_name} is saved at {file_path}')
         return file_path
