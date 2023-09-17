@@ -123,7 +123,7 @@ class Saramin:
                     # 더 좋은 근무지 위치 정보가 있다면 업데이트
                     job_location = self.get_better_job_location(soup)
                     if job_location is not None:
-                        summary_dict["근무지역"] = job_location
+                        summary_dict["근무지역"] = job_location_filter(job_location)
 
                     period_list = soup.select("dl.info_period dd")
                     # YYYY.MM.DD HH:MM 형식
@@ -133,6 +133,17 @@ class Saramin:
                         end = text_filter(period_list[1].text)
                     else:
                         end = "채용시 마감"
+
+                    # 연락처 추출
+                    contact_info = self.get_contact_info(soup)
+                    if contact_info is not None:
+                        summary_dict["연락처"] = contact_info_filter(contact_info)
+                    print(summary_dict.get("연락처", 'X'))
+
+                    # 이미지 추출
+                    # image_list = soup.select("div.jv_cont.jv_detail td img")
+                    # print(image_list)
+                    # print(len(image_list))
 
                     # 학력이 박사졸, 석사졸인 채용공고 제외
                     if summary_dict['학력'] in ['석사졸업', '박사졸업']:
@@ -149,6 +160,7 @@ class Saramin:
                             "근무지역": summary_dict.get("근무지역", "X"),
                             "필수사항": summary_dict.get("필수사항", "X"),
                             "우대사항": summary_dict.get("우대사항", "X"),
+                            "연락처": summary_dict.get("연락처", "X"),
                             "접수 시작일": start,
                             "접수 마감일": end,
                             "url": url,
@@ -188,39 +200,35 @@ class Saramin:
                 self.save_to_csv(result, search_word)
             self.data.append(result)
 
-    # 근무지 위치 관련 파싱
+    # 근무지 위치 파싱
     def get_better_job_location(self, soup):
         # 더 자세한 위치 정보가 담긴 근무지 위치가 있을 시 근무지역 수정 
         bottom_job_location_span = soup.select_one("div.jv_cont.jv_location span.spr_jview.txt_adr")
         middle_job_location_span = soup.select_one("div.wrap_list_template span#template_job_type_aw_post_address")
         extra_job_location_td_list = soup.select("div.wrap_break_recruit td")
 
-        # Case 1: 하단 근무지 위치가 존재하는 경우
+        # Case 1: 하단 근무지역이 존재하는 경우
         if bottom_job_location_span:
             job_location = job_location_filter(bottom_job_location_span.text)
-            # print(f"Case 1: {job_location}")
             return job_location
-        # Case 2: 중단 근무지 위치가 존재하는 경우
+        # Case 2: 중단 근무지역이 존재하는 경우
         elif middle_job_location_span:
             job_location = job_location_filter(middle_job_location_span.text)
-            # print(f"Case 2: {job_location}")
             return job_location.split(' - ')[0]
-        # Case 3: 근무지역이 어딘가에 무조건 들어있긴 해서 텍스트를 다 확인하면 찾을 수는 있다...
+        # Case 3: 공고 본문에서 근무지역 or 회사주소가 있는지 확인
         elif extra_job_location_td_list:
             for td in extra_job_location_td_list:
                 td_text = td.text
                 # EX) ㆍ근무지역 : (110-850) 서울 종로구 효제동 20 우일빌딩
                 # https://www.saramin.co.kr/zf_user/jobs/view?view_type=search&rec_idx=46512518&location=ts&searchword=CRA&searchType=search&paid_fl=n&search_uuid=9c36f5e9-3b77-40fe-949a-afa4a6ea67b5
                 if "근무지역" in td_text:
-                    # ㆍ근무형태 : 정규직(수습기간 3개월) 
                     start_idx = td_text.find("근무지역")
-                    end_idx = td_text.find('ㆍ', start_idx + 15)
+                    end_idx = td_text.find('ㆍ', start_idx + 10)
                     if end_idx == -1:
                         job_location = job_location_filter(td_text[start_idx:])
                     else:
                         job_location = job_location_filter(td_text[start_idx:end_idx])
-                    # print(f"case 3-1: {summary_dict['근무지역']}")
-                    return job_location_filter(job_location[7:])
+                    return job_location[7:]
                 # EX) - 회사주소 : 경기 용인시 수지구 손곡로 17
                 # https://www.saramin.co.kr/zf_user/jobs/view?view_type=search&rec_idx=46587286&location=ts&searchword=%EB%A9%94%EB%94%94%EC%BB%AC%EB%9D%BC%EC%9D%B4%ED%84%B0&searchType=search&paid_fl=n&search_uuid=060232a0-7395-47f2-9bd7-12a3ef73425f
                 elif "회사주소" in td_text:
@@ -230,12 +238,49 @@ class Saramin:
                         job_location = job_location_filter(td_text[start_idx:])
                     else:
                         job_location = job_location_filter(td_text[start_idx:end_idx])
-                    # print(f"case 3-2: {summary_dict['근무지역']}")
-                    return job_location_filter(job_location[7:])
-        # 근무지역 정보가 아예 존재하지 않는 경우
+                    return job_location[7:]
+        # Case 4: 자세한 근무지역 정보가 아예 존재하지 않는 경우
         else:
-            # print(f"case 4: 자세한 근무지역 정보가 존재하지 않습니다")
             return None
+
+    # 연락처 정보 파싱 -> 근무지 위치 파싱과 비슷함
+    def get_contact_info(self, soup):
+        contact_info_dd = soup.select_one("div.jv_cont.jv_howto dl.guide dd.info")
+        extra_contact_info_list = soup.select("div.wrap_break_recruit td")
+
+        # Case 1: 접수기간 및 방법에 존재하는 경우
+        if contact_info_dd:
+            # EX) 02-2621-2297
+            # https://www.saramin.co.kr/zf_user/jobs/view?view_type=search&rec_idx=46569782&location=ts&searchword=CRA&searchType=search&paid_fl=n&search_uuid=1ef8ff53-0c68-47e9-8459-3ddd8fae6ca0
+            contact_info = text_filter(contact_info_dd.text)
+            return contact_info
+        # Case 2: 공고 본문에서 연락처 or 전화가 있는지 확인
+        elif extra_contact_info_list:
+            for td in extra_contact_info_list:
+                td_text = td.text
+                # EX) ㆍ연락처 : 02-2277-3935
+                # https://www.saramin.co.kr/zf_user/jobs/view?view_type=search&rec_idx=46512518&location=ts&searchword=CRA&searchType=search&paid_fl=n&search_uuid=98bf7c99-311d-4285-bd3f-e6f2370056e6
+                if "연락처" in td_text:
+                    start_idx = td_text.find("연락처")
+                    end_idx = td_text.find('ㆍ', start_idx + 10)
+                    if end_idx == -1:
+                        contact_info = text_filter(td_text[start_idx:])
+                    else:
+                        contact_info = text_filter(td_text[start_idx:end_idx])
+                    return contact_info[6:]
+                # EX) - 전화 : 031-270-5110
+                # https://www.saramin.co.kr/zf_user/jobs/view?view_type=search&rec_idx=46587286&location=ts&searchword=%EB%A9%94%EB%94%94%EC%BB%AC%EB%9D%BC%EC%9D%B4%ED%84%B0&searchType=search&paid_fl=n&search_uuid=ea6362ab-030b-4733-9a92-a14bbadccfd2
+                elif "전화 : " in td_text:
+                    start_idx = td_text.find("전화 : ")
+                    end_idx = td_text.find('-', start_idx + 15)
+                    if end_idx == -1:
+                        contact_info = text_filter(td_text[start_idx:])
+                    else:
+                        contact_info = text_filter(td_text[start_idx:end_idx])
+                    return contact_info[5:]
+        # Case 3: 연락처 정보가 아예 존재하지 않는 경우
+        else:
+            return None 
 
     # 데이터 Getter
     def get_data(self):
@@ -248,7 +293,7 @@ class Saramin:
             os.makedirs(self.save_dir)
         file_path = os.path.join(self.save_dir, file_name)
         df.to_csv(file_path, index=False, encoding='utf-8-sig')
-        print(f'{file_name} is saved at {file_path}')
+        # print(f'{file_name} is saved at {file_path}')
         return file_path
 
     # 모든 데이터 csv로 저장
@@ -264,7 +309,7 @@ class Saramin:
         if len(result) == 0:
             return ""
         result.to_csv(file_path, index=False, encoding='utf-8-sig')
-        print(f'{file_name} is saved at {file_path}')
+        # print(f'{file_name} is saved at {file_path}')
         return file_path
 
     # 결과 json으로 저장
