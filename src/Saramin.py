@@ -182,7 +182,6 @@ class Saramin:
                         break
                 if page >= 3 or idx >= 10:
                     break
-                break ##################################################################
                 page += 1
 
             if self.save == True:
