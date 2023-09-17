@@ -35,7 +35,12 @@ def text_filter(text):
 def job_location_filter(text):
     text = text_filter(text)
     text_li = text.split()
-    maybe_zip_code = text_li[0]
+    maybe_zip_code = text_li[0].strip()
     if maybe_zip_code[0] == '(' and maybe_zip_code[-1] == ')':
         text = ' '.join(text_li[1:])
+    return text
+
+def contact_info_filter(text):
+    if len(text) == 9:
+        text = text[:2] + '-' + text[2:5] + '-' + text[5:]
     return text
