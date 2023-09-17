@@ -28,4 +28,14 @@ def text_filter(text):
     text = text.strip().replace("\\xa0", " ").replace("\n", '')
     while (text.find("  ") != -1):
         text = text.replace("  ", " ")
+    if text[-1] == ',':
+        text = text[:-1]
+    return text
+
+def job_location_filter(text):
+    text = text_filter(text)
+    text_li = text.split()
+    maybe_zip_code = text_li[0]
+    if maybe_zip_code[0] == '(' and maybe_zip_code[-1] == ')':
+        text = ' '.join(text_li[1:])
     return text
