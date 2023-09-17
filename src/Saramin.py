@@ -177,6 +177,10 @@ class Saramin:
                     else:
                         end = "채용시 마감"
 
+                    # 학력이 박사졸, 석사졸인 채용공고 제외
+                    if summary_dict['학력'] in ['석사졸업', '박사졸업']:
+                        continue
+
                     data = {"키워드": search_word,
                             "기업명": company_text,
                             "공고명": title_text,
@@ -213,10 +217,6 @@ class Saramin:
                     #         # detailsImageUrl
                     #         "jobWebsite": url, # url(채용 공고 홈페이지)
                     # }
-
-                    # 학력이 박사졸, 석사졸인 채용공고 제외
-                    if data['학력'] in ['석사졸업', '박사졸업']:
-                        continue
 
                     result = pd.concat(
                         [result, pd.DataFrame(data, index=[idx])])
