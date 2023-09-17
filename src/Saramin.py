@@ -140,6 +140,7 @@ class Saramin:
                             "접수 마감일": end,
                             "url": url,
                             }
+
                     # data = {
                     #         "title": title_text, # 공고명
                     #         # titleImageUrl,
@@ -160,6 +161,11 @@ class Saramin:
                     #         # detailsImageUrl
                     #         "jobWebsite": url, # url(채용 공고 홈페이지)
                     # }
+
+                    # 학력이 박사졸, 석사졸인 채용공고 제외
+                    if data['학력'] in ['석사졸업', '박사졸업']:
+                        continue
+
                     result = pd.concat(
                         [result, pd.DataFrame(data, index=[idx])])
                     idx += 1
