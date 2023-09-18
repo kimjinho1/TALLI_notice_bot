@@ -10,3 +10,6 @@ fclean:
 	sudo docker-compose down -v --rmi all
 	docker network prune --force
 	docker volume prune --force
+
+format:
+	black "./src"
