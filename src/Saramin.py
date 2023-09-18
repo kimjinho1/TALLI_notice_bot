@@ -138,7 +138,6 @@ class Saramin:
                     contact_info = self.get_contact_info(soup)
                     if contact_info is not None:
                         summary_dict["연락처"] = contact_info_filter(contact_info)
-                    print(summary_dict.get("연락처", 'X'))
 
                     # 이미지 추출
                     # image_list = soup.select("div.jv_cont.jv_detail td img")
@@ -186,6 +185,9 @@ class Saramin:
                     #         # detailsImageUrl
                     #         "jobWebsite": url, # url(채용 공고 홈페이지)
                     # }
+
+                    if self.duplicate_check(data):
+                        continue
 
                     result = pd.concat(
                         [result, pd.DataFrame(data, index=[idx])])
@@ -282,6 +284,14 @@ class Saramin:
         else:
             return None 
 
+    def duplicate_check(self, data):
+        for dt in self.data:
+            if len(dt) > 0:
+                duplicate_check = (dt["공고명"] == data["공고명"]) & (dt["기업명"] == data["기업명"])
+                if duplicate_check.any():
+                    return True
+        return False
+
     # 데이터 Getter
     def get_data(self):
         return self.data
@@ -293,7 +303,7 @@ class Saramin:
             os.makedirs(self.save_dir)
         file_path = os.path.join(self.save_dir, file_name)
         df.to_csv(file_path, index=False, encoding='utf-8-sig')
-        # print(f'{file_name} is saved at {file_path}')
+        print(f'{file_name} is saved at {file_path}')
         return file_path
 
     # 모든 데이터 csv로 저장
@@ -309,7 +319,7 @@ class Saramin:
         if len(result) == 0:
             return ""
         result.to_csv(file_path, index=False, encoding='utf-8-sig')
-        # print(f'{file_name} is saved at {file_path}')
+        print(f'{file_name} is saved at {file_path}')
         return file_path
 
     # 결과 json으로 저장
