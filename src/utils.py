@@ -53,3 +53,12 @@ def experience_filter(text):
     elif '경력' in text:
         return "경력"
     return "경력 무관"
+
+def education_filter(text):
+    if ("대졸(2,3년제)" in text) or ('3년' in text) or ('2년' in text):
+        return "초대졸 이상 (2, 3년제)"
+    elif ('대졸(4년제)' in text):
+        return "대졸 이상 (4년제)"
+    elif ('고교졸업' in text) or ('고졸' in text):
+        return "고졸 이상"
+    return "학력무관"
