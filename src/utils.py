@@ -44,3 +44,12 @@ def contact_info_filter(text):
     if len(text) == 9:
         text = text[:2] + '-' + text[2:5] + '-' + text[5:]
     return text
+
+def experience_filter(text):
+    if '무관' in text or ('신입' in text and '경력' in text):
+        return "경력 무관"
+    elif '신입' in text:
+        return "신입"
+    elif '경력' in text:
+        return "경력"
+    return "경력 무관"

@@ -145,14 +145,15 @@ class Saramin:
                     # print(len(image_list))
 
                     # 학력이 박사졸, 석사졸인 채용공고 제외
-                    if summary_dict['학력'] in ['석사졸업', '박사졸업']:
+                    education = summary_dict.get('학력', 'X')
+                    if '석사' in education or '박사' in education:
                         continue
 
                     data = {"키워드": search_word,
                             "기업명": company_text,
                             "공고명": title_text,
                             # "스크랩 수": scrap_count_text,
-                            "경력": summary_dict.get("경력", "X"),
+                            "경력": experience_filter(summary_dict.get("경력", "X")),
                             "학력": summary_dict.get("학력", "X"),
                             "근무형태": summary_dict.get("근무형태", "X"),
                             "급여": summary_dict.get("급여", "X"),
@@ -303,7 +304,7 @@ class Saramin:
             os.makedirs(self.save_dir)
         file_path = os.path.join(self.save_dir, file_name)
         df.to_csv(file_path, index=False, encoding='utf-8-sig')
-        print(f'{file_name} is saved at {file_path}')
+        # print(f'{file_name} is saved at {file_path}')
         return file_path
 
     # 모든 데이터 csv로 저장
@@ -319,7 +320,7 @@ class Saramin:
         if len(result) == 0:
             return ""
         result.to_csv(file_path, index=False, encoding='utf-8-sig')
-        print(f'{file_name} is saved at {file_path}')
+        # print(f'{file_name} is saved at {file_path}')
         return file_path
 
     # 결과 json으로 저장
