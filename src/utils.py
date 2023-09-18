@@ -58,7 +58,7 @@ def experience_filter(text):
         return "신입"
     elif "경력" in text:
         return "경력"
-    return "경력 무관"
+    return text
 
 
 def education_filter(text):
@@ -68,7 +68,7 @@ def education_filter(text):
         return "대졸 이상 (4년제)"
     elif ("고교졸업" in text) or ("고졸" in text):
         return "고졸 이상"
-    return "학력무관"
+    return text
 
 
 def job_type_filter(text):
@@ -78,8 +78,8 @@ def job_type_filter(text):
         return "인턴"
     elif "프리랜서" in text:
         return "프리랜서"
-    elif "계약" in text:
+    elif ("계약" in text) or ("위촉" in text):
         return "계약직"
     elif "정규" in text:
         return "정규직"
-    return "정규직1234"
+    return text
