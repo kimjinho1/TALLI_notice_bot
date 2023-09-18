@@ -20,7 +20,7 @@ class SlackBot:
         message = f"# {self.cnt}번째\n"
         cols = df.columns.tolist()
         for col in cols:
-            if col == 'url':
+            if col == "url":
                 message += f"{col}: `{df.loc[idx, col]}`\n"
             else:
                 message += f"{col}: {df.loc[idx, col]}\n"
@@ -30,8 +30,7 @@ class SlackBot:
     def send_message(self, message):
         try:
             response = self.client.chat_postMessage(
-                channel=self.channel_id,
-                text=message
+                channel=self.channel_id, text=message
             )
             os.rmdir("result/")
             return response
@@ -42,7 +41,7 @@ class SlackBot:
     # 모든 메시지 전송
     def send_all_message(self, df):
         for i in range(len(df)):
-            if (i >= 10):
+            if i >= 10:
                 return
             message = self.make_message(df, i)
             self.send_message(message)
