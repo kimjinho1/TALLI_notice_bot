@@ -62,3 +62,16 @@ def education_filter(text):
     elif ('고교졸업' in text) or ('고졸' in text):
         return "고졸 이상"
     return "학력무관"
+
+def job_type_filter(text):
+    if ('아르바이트' in text) or ('알바' in text):
+        return "아르바이트"
+    elif ('인턴' in text):
+        return "인턴"
+    elif ('프리랜서' in text):
+        return "프리랜서"
+    elif ('계약' in text):
+        return "계약직"
+    elif "정규" in text:
+        return "정규직"
+    return "정규직1234"
