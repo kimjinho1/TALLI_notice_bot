@@ -1,0 +1,9 @@
+version: "3.8"
+services:
+  your_service_name:
+    container_name: talli_bot
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - .:/app
