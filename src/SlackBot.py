@@ -32,7 +32,6 @@ class SlackBot:
             response = self.client.chat_postMessage(
                 channel=self.channel_id, text=message
             )
-            os.rmdir("result/")
             return response
         except SlackApiError as error:
             print(f"Error sending message: {error}")
@@ -55,8 +54,6 @@ class SlackBot:
                 channel=self.channel_id,
                 file=file_path,
             )
-            os.remove(file_path)
-            os.rmdir("result/")
             return response
         except SlackApiError as error:
             print(f"Error sending message: {error}")
