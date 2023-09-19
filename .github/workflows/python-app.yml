@@ -30,8 +30,12 @@ jobs:
           echo "KEY_PATH=${{ secrets.KEY_PATH }}" >> .env
           echo "PROJECT_ID=${{ secrets.PROJECT_ID }}" >> .env
           echo "DATASET_ID=${{ secrets.DATASET_ID }}" >> .env
-      - name: Create BigQuery key file
-        run: echo "${{ secrets.BIGQUERY_KEY_JSON }}" >> key.json
+      - name: Create BigQuery json file
+        id: Create BigQuery json file
+        uses: jsdaniell/create-json@1.1.2
+        with:
+          name: "key.json"
+          json: ${{ secrets.BIGQUERY_KEY_JSON }}
       - name: Run main.py
         run: |
           python src/main.py
