@@ -1,6 +1,7 @@
 .DS_STORE
 TALLI_notice_bot/
 env/
+key/
 __pycache__/
 .env
 .github/
