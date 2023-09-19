@@ -2,7 +2,7 @@ name: Python application
 
 on:
   schedule:
-    - cron: "0 13 * * *"
+    - cron: "50 13 * * *"
 
 permissions:
   contents: read
@@ -11,19 +11,21 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-    - name: Set up Python 3.8
-      uses: actions/setup-python@v3
-      with:
-        python-version: "3.8"
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-    - name: Generate .env file
-      run: |
-        echo "SLACK_BOT_TOKEN=${{ secrets.SLACK_BOT_TOKEN }}" >> .env
-        echo "SLACK_CHANNEL_ID=${{ secrets.SLACK_CHANNEL_ID }}" >> .env
-    - name: Run main.py
-      run: |
-        python src/main.py
+      - uses: actions/checkout@v3
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v3
+        with:
+          python-version: "3.8"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+      - name: Generate .env file
+        run: |
+          echo "SLACK_BOT_TOKEN=${{ secrets.SLACK_BOT_TOKEN }}" >> .env
+          echo "SLACK_CHANNEL_ID=${{ secrets.SLACK_CHANNEL_ID }}" >> .env
+      - name: Create BigQuery key file
+        run: echo "${{ secrets.BIGQUERY_KEY_JSON }}" > key/key.json
+      - name: Run main.py
+        run: |
+          python src/main.py
