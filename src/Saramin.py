@@ -152,44 +152,45 @@ class Saramin:
                     if "석사" in education or "박사" in education:
                         continue
 
-                    data = {
-                        "키워드": search_word,
-                        "기업명": company_text,
-                        "공고명": title_text,
-                        # "스크랩 수": scrap_count_text,
-                        "경력": experience_filter(summary_dict.get("경력", "X")),
-                        "학력": education_filter(education),
-                        "근무형태": job_type_filter(summary_dict.get("근무형태", "X")),
-                        "급여": summary_dict.get("급여", "X"),
-                        "근무지역": summary_dict.get("근무지역", "X"),
-                        "필수사항": summary_dict.get("필수사항", "X"),
-                        "우대사항": summary_dict.get("우대사항", "X"),
-                        "연락처": summary_dict.get("연락처", "X"),
-                        "접수 시작일": start,
-                        "접수 마감일": end,
-                        "url": url,
-                    }
-
                     # data = {
-                    #         "title": title_text, # 공고명
-                    #         # titleImageUrl,
-                    #         # companyId,
-                    #         "companyName": company_text, # 회사 이름
-                    #         "category": search_word, # 직종(검색 단어)
-                    #         "start": start, # 시작일
-                    #         "deadline": end, # 마감일
-                    #         "scrapCount": scrap_count_text, # 스크랩 수
-                    #         "experience": summary_dict.get("경력", "X"), # 경력
-                    #         "education": summary_dict.get("학력", "X"), # 학력
-                    #         "requirements": summary_dict.get("필수사항", "X"), # 필수사항
-                    #         "preferences": summary_dict.get("우대사항", "X"), # 우대사항
-                    #         "salary": summary_dict.get("급여", "X"), # 급여
-                    #         "jobType": summary_dict.get("근무형태", "X"), # 근무형태
-                    #         "jobLocation": summary_dict.get("근무지역", "X"), # 근무지역
-                    #         # details
-                    #         # detailsImageUrl
-                    #         "jobWebsite": url, # url(채용 공고 홈페이지)
+                    #     "키워드": search_word,
+                    #     "기업명": company_text,
+                    #     "공고명": title_text,
+                    #     "경력": experience_filter(summary_dict.get("경력", "X")),
+                    #     "학력": education_filter(education),
+                    #     "근무형태": job_type_filter(summary_dict.get("근무형태", "X")),
+                    #     "급여": summary_dict.get("급여", "X"),
+                    #     "근무지역": summary_dict.get("근무지역", "X"),
+                    #     "필수사항": summary_dict.get("필수사항", "X"),
+                    #     "우대사항": summary_dict.get("우대사항", "X"),
+                    #     "연락처": summary_dict.get("연락처", "X"),
+                    #     "접수 시작일": start,
+                    #     "접수 마감일": end,
+                    #     "url": url,
+                    #    # "스크랩 수": scrap_count_text,
                     # }
+
+                    data = {
+                        "keyword": search_word,
+                        "companyName": company_text,
+                        "title": title_text,
+                        "experience": experience_filter(summary_dict.get("경력", "X")),
+                        "education": education_filter(education),
+                        "jobType": job_type_filter(summary_dict.get("근무형태", "X")),
+                        "salary": summary_dict.get("급여", "X"),
+                        "jobLocation": summary_dict.get("근무지역", "X"),
+                        "requirements": summary_dict.get("필수사항", "X"),
+                        "preferences": summary_dict.get("우대사항", "X"),
+                        "contact": summary_dict.get("연락처", "X"),
+                        "start": start,
+                        "deadline": end,
+                        "url": url,
+                        # "titleImageUrl": ,
+                        # "companyId": ,
+                        # "scrapCount": scrap_count_text,
+                        # "details": ,
+                        # "detailsImageUrl": ,
+                    }
 
                     if self.duplicate_check(data):
                         continue
@@ -295,8 +296,11 @@ class Saramin:
     def duplicate_check(self, data):
         for dt in self.data:
             if len(dt) > 0:
-                duplicate_check = (dt["공고명"] == data["공고명"]) & (
-                    dt["기업명"] == data["기업명"]
+                # duplicate_check = (dt["공고명"] == data["공고명"]) & (
+                #     dt["기업명"] == data["기업명"]
+                # )
+                duplicate_check = (dt["companyName"] == data["companyName"]) & (
+                    dt["title"] == data["title"]
                 )
                 if duplicate_check.any():
                     return True
