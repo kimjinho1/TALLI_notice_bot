@@ -2,7 +2,7 @@ name: Python application
 
 on:
   schedule:
-    - cron: "25 14 * * *"
+    - cron: "39 14 * * *"
 
 permissions:
   contents: read
@@ -24,8 +24,11 @@ jobs:
         run: |
           echo "SLACK_BOT_TOKEN=${{ secrets.SLACK_BOT_TOKEN }}" >> .env
           echo "SLACK_CHANNEL_ID=${{ secrets.SLACK_CHANNEL_ID }}" >> .env
+          echo "SLACK_CHANNEL_ID=${{ secrets.KEY_PATH }}" >> .env
+          echo "SLACK_CHANNEL_ID=${{ secrets.PROJECT_ID }}" >> .env
+          echo "SLACK_CHANNEL_ID=${{ secrets.DATASET_ID }}" >> .env
       - name: Create BigQuery key file
-        run: echo "${{ secrets.BIGQUERY_KEY_JSON }}" > key/key.json
+        run: echo "${{ secrets.BIGQUERY_KEY_JSON }}" >> key.json
       - name: Run main.py
         run: |
           python src/main.py
