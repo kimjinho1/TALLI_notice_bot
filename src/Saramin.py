@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup
 import json
 import pandas as pd
 import os
+import uuid
 
 from utils import *
 
@@ -153,6 +154,7 @@ class Saramin:
                         continue
 
                     # data = {
+                    #     "id":  uuid.uuid4(),
                     #     "키워드": search_word,
                     #     "기업명": company_text,
                     #     "공고명": title_text,
@@ -171,6 +173,7 @@ class Saramin:
                     # }
 
                     data = {
+                        "id": uuid.uuid4(),
                         "keyword": search_word,
                         "companyName": company_text,
                         "title": title_text,
