@@ -50,7 +50,7 @@ python3 src/main.py
 - 접수 시작일
 - 접수 마감일
 
-### URL 파악
+### URL 파악  
 
 기준 URL: https://www.saramin.co.kr/zf_user/search/recruit?&recruitPageCount=40&&recruitSort=relation&searchword={키워드}&recruitPage={페이지}
 
