@@ -1,3 +1,5 @@
+import os
+import logging
 from datetime import datetime, timedelta
 
 
@@ -8,9 +10,9 @@ def get_yesterday_date():
 
 
 # 오늘 날짜 얻기
-def get_current_date():
+def get_current_date(sep="/"):
     now = datetime.now()
-    return now.strftime("%y/%m/%d")
+    return now.strftime(f"%y{sep}%m{sep}%d")
 
 
 # 같은 요일인지 확인
@@ -20,7 +22,8 @@ def check_same_day(job_day_text):
     if create_or_update == "수정일":
         return False
     # 등록일일 경우 date를 확인 -> 현재 날짜와 같은지 확인
-    today_date = get_current_date()
+    # today_date = get_current_date()
+    today_date = get_yesterday_date()
     if create_or_update == "등록일" and date != today_date:
         return False
     return True
@@ -28,7 +31,7 @@ def check_same_day(job_day_text):
 
 # 텍스트 필터링
 def text_filter(text):
-    text = text.strip().replace("\\xa0", " ").replace("\n", "")
+    text = text.strip().replace("\\xa0", " ").replace("\n", "").replace("\r", "")
     while text.find("  ") != -1:
         text = text.replace("  ", " ")
     if text[-1] == ",":
@@ -58,6 +61,8 @@ def experience_filter(text):
         return "신입"
     elif "경력" in text:
         return "경력"
+    elif text == "":
+        return "X"
     return text
 
 
@@ -68,6 +73,8 @@ def education_filter(text):
         return "대졸 이상 (4년제)"
     elif ("고교졸업" in text) or ("고졸" in text):
         return "고졸 이상"
+    elif text == "":
+        return "X"
     return text
 
 
@@ -82,4 +89,39 @@ def job_type_filter(text):
         return "계약직"
     elif "정규" in text:
         return "정규직"
+    elif text == "":
+        return "X"
     return text
+
+
+def mkdir(dir_path):
+    if not os.path.isdir(dir_path):
+        os.makedirs(dir_path)
+
+
+def getLogger(logger_name):
+    today = get_current_date(sep="-")
+    log_dir_path = os.path.join("log", today)
+    mkdir(log_dir_path)
+    log_file_path = os.path.join(log_dir_path, f"{logger_name}.log")
+
+    # 로거 생성
+    logger = logging.getLogger(logger_name)
+    logger.setLevel(logging.DEBUG)
+
+    # 파일 핸들러 생성
+    fh = logging.FileHandler(log_file_path)
+    fh.setLevel(logging.DEBUG)
+
+    # 로그 포매터 생성
+    formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
+    fh.setFormatter(formatter)
+
+    # 로거에 파일 핸들러 추가
+    logger.addHandler(fh)
+
+    return logger
+
+
+if __name__ == "__main__":
+    getLogger("bigquery")

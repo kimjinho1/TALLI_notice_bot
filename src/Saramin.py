@@ -5,6 +5,7 @@ import pandas as pd
 import os
 import uuid
 
+from bigquery import *
 from utils import *
 
 
@@ -15,21 +16,36 @@ class Saramin:
         self.save_dir = "result"
         self.origin_url = "https://www.saramin.co.kr"
         self.base_url = "https://www.saramin.co.kr/zf_user/search/recruit?&recruitPageCount=30&recruitSort=relation"
-        self.search_words = ["CRA", "CRC", "연구간호사", "보건관리자", "보험심사", "메디컬라이터"]
+        self.search_words = [
+            "CRA",
+            "CRC",
+            "연구간호사",
+            "보건관리자",
+            "보험심사",
+            "메디컬라이터",
+        ]
+        # self.search_words = [
+        #     "CRC",
+        # ]
         self.headers = [
             {
                 "User-Agent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:15.0) Gecko/20100101 Firefox/15.0.1"
             }
         ]
+        self.old_data = get_all_positions_df()
         self.data = []
+        self.current_date_time = datetime.now()
+        self.logger = getLogger("saramin")
 
     # 사람인 전체 크롤링
     def crawling(self):
+        self.logger.info("Crawling positions(saramin) start")
         for search_word in self.search_words:
             page = 1
             idx = 0
             result = pd.DataFrame()
 
+            self.logger.info(f"Crawling {search_word} positions start")
             while True:
                 search_url = f"{self.base_url}&searchword={search_word}&recruitPage={page}&except_read=&ai_head_hunting=&company_cd=0%2C1%2C2%2C3%2C4%2C5%2C6%2C7"
                 search_response = requests.get(search_url, headers=self.headers[0])
@@ -38,7 +54,7 @@ class Saramin:
                 # 마지막 페이지 확인
                 finish = search_soup.select_one("div.info_no_result")
                 if finish is not None:
-                    finish
+                    self.logger.info(f"Crawling {search_word} position finish")
                     break
 
                 # 채용 공고 링크 리스트 추출[30개]
@@ -57,158 +73,178 @@ class Saramin:
                     job_tit_link = self.origin_url + job_tit["href"]
                     job_tit_links.append(job_tit_link)
 
+                self.logger.info(
+                    f"Crawling {search_word} position, page: {page}, link_count: {len(job_tit_links)} start"
+                )
+
                 # 채용 공고 페이지로 이동
                 for link in job_tit_links:
-                    # url
                     url = link.replace("relay/", "")
-                    response = requests.get(url, headers=self.headers[0])
-                    soup = BeautifulSoup(response.content, "lxml")
-
-                    # 회사, 공고명, 스크랩 수
-                    company = soup.select_one("div.title_inner a.company")
-                    title = soup.select_one("h1.tit_job")
-                    # scrap_count = soup.select_one(
-                    #     "div.jv_header span.txt_scrap")
-                    # if not company or not title or not scrap_count:
-                    if not company or not title:
+                    try:
+                        data = self.get_parsed_data(url)
+                    except Exception as e:
+                        self.logger.error(f"Error parsing position data: {url}")
+                        self.logger.error(e)
                         continue
 
-                    company_text = text_filter(company.text)
-                    title_text = text_filter(title.text)
-                    # if scrap_count.text == "스크랩":
-                    #     scrap_count_text = "0"
-                    # else:
-                    #     scrap_count_text = text_filter(scrap_count.text)
-
-                    # 경력, 학력, 근무형태, 급여, 근무일시, 근무지역 추출
-                    # 필수사항, 우대사항, 직급/직책은 없는 경우 있긴 하지만 일단 추출함
-                    # default: dict_keys(['경력', '학력', '근무형태', '급여', '근무일시', '근무지역'])
-                    summary_dict = {}
-                    summary_list = soup.select("div.jv_summary div.col dl")
-                    for li in summary_list:
-                        key = text_filter(li.select_one("dt").text)
-                        dd_tag = li.select_one("dd")
-                        dd_first_str = text_filter(str(next(dd_tag.stripped_strings)))
-                        details = dd_tag.select("ul.toolTipTxt li")
-                        details_str = ""
-                        # 상세보기가 있는 경우
-                        if details:
-                            for detail in details:
-                                detail_key = text_filter(detail.select_one("span").text)
-                                detail_key = "".join(detail_key.split())
-                                detail_val = text_filter(detail.text[len(detail_key) :])
-                                if details_str == "":
-                                    details_str += f"{detail_key}:{detail_val}"
-                                else:
-                                    details_str += f"|{detail_key}:{detail_val}"
-                        # 기본 텍스트가 없고, 상세보기만 있는 경우
-                        if key == dd_first_str:
-                            val = details_str
-                        else:
-                            val = text_filter(dd_tag.text)
-                            # 기본 텍스트, 상세보기 둘 다 있는 경우
-                            if details:
-                                details_origin_str = text_filter(
-                                    li.select_one("dd")
-                                    .select_one("div.toolTipWrap")
-                                    .text
-                                )
-                                val = val[: -len(details_origin_str) + len(details) + 1]
-
-                        summary_dict[key] = val
-
-                    # 근무지역이 뒤에 지도 텍스트가 같이 들어와서 자름
-                    if "근무지역" in summary_dict:
-                        job_location_split_li = summary_dict["근무지역"].split()
-                        if job_location_split_li[-1] == "지도":
-                            job_location = " ".join(job_location_split_li[:-1])
-                            summary_dict["근무지역"] = job_location_filter(job_location)
-
-                    # 더 좋은 근무지 위치 정보가 있다면 업데이트
-                    job_location = self.get_better_job_location(soup)
-                    if job_location is not None:
-                        summary_dict["근무지역"] = job_location_filter(job_location)
-
-                    period_list = soup.select("dl.info_period dd")
-                    # YYYY.MM.DD HH:MM 형식
-                    start = text_filter(period_list[0].text)
-                    # 마감일은 없는 경우 있음
-                    if len(period_list) == 2:
-                        end = text_filter(period_list[1].text)
-                    else:
-                        end = "채용시 마감"
-
-                    # 연락처 추출
-                    contact_info = self.get_contact_info(soup)
-                    if contact_info is not None:
-                        summary_dict["연락처"] = contact_info_filter(contact_info)
-
-                    # 이미지 추출
-                    # image_list = soup.select("div.jv_cont.jv_detail td img")
-                    # print(image_list)
-                    # print(len(image_list))
-
-                    # 학력이 박사졸, 석사졸인 채용공고 제외
-                    education = summary_dict.get("학력", "X")
-                    if "석사" in education or "박사" in education:
+                    if not data or self.duplicate_check(data):
+                        self.logger.info(f"Skipped duplicate position: {url}")
                         continue
 
-                    # data = {
-                    #     "id":  uuid.uuid4(),
-                    #     "키워드": search_word,
-                    #     "기업명": company_text,
-                    #     "공고명": title_text,
-                    #     "경력": experience_filter(summary_dict.get("경력", "X")),
-                    #     "학력": education_filter(education),
-                    #     "근무형태": job_type_filter(summary_dict.get("근무형태", "X")),
-                    #     "급여": summary_dict.get("급여", "X"),
-                    #     "근무지역": summary_dict.get("근무지역", "X"),
-                    #     "필수사항": summary_dict.get("필수사항", "X"),
-                    #     "우대사항": summary_dict.get("우대사항", "X"),
-                    #     "연락처": summary_dict.get("연락처", "X"),
-                    #     "접수 시작일": start,
-                    #     "접수 마감일": end,
-                    #     "url": url,
-                    #    # "스크랩 수": scrap_count_text,
-                    # }
-
-                    data = {
-                        "id": uuid.uuid4(),
-                        "keyword": search_word,
-                        "companyName": company_text,
-                        "title": title_text,
-                        "experience": experience_filter(summary_dict.get("경력", "X")),
-                        "education": education_filter(education),
-                        "jobType": job_type_filter(summary_dict.get("근무형태", "X")),
-                        "salary": summary_dict.get("급여", "X"),
-                        "jobLocation": summary_dict.get("근무지역", "X"),
-                        "requirements": summary_dict.get("필수사항", "X"),
-                        "preferences": summary_dict.get("우대사항", "X"),
-                        "contact": summary_dict.get("연락처", "X"),
-                        "start": start,
-                        "deadline": end,
-                        "url": url,
-                        # "titleImageUrl": ,
-                        # "companyId": ,
-                        # "scrapCount": scrap_count_text,
-                        # "details": ,
-                        # "detailsImageUrl": ,
-                    }
-
-                    if self.duplicate_check(data):
-                        continue
+                    data["id"] = uuid.uuid4()
+                    data["keyword"] = search_word
 
                     result = pd.concat([result, pd.DataFrame(data, index=[idx])])
                     idx += 1
-                    if idx >= 10:
+                    self.logger.info(
+                        f"Success parsing position data(idx: {idx}) | url: {url}"
+                    )
+
+                    if (self.day == "today" and idx >= 10) or idx > 100:
                         break
-                if page >= 3 or idx >= 10:
+                if (self.day == "today" and (page >= 3 or idx >= 10)) or (
+                    page > 10 or idx > 100
+                ):
                     break
                 page += 1
 
             if self.save == True:
                 self.save_to_csv(result, search_word)
+
             self.data.append(result)
+            self.logger.info(f"{len(result)} {search_word} postions is parsed")
+
+    def get_parsed_data(self, url):
+        response = requests.get(url, headers=self.headers[0])
+        soup = BeautifulSoup(response.content, "lxml")
+
+        # 회사, 공고명, 스크랩 수
+        company = soup.select_one("div.title_inner a.company")
+        title = soup.select_one("h1.tit_job")
+        # scrap_count = soup.select_one(
+        #     "div.jv_header span.txt_scrap")
+        # if not company or not title or not scrap_count:
+        if not company or not title:
+            self.logger.warning("Can't found company or time: {url}")
+            return None
+
+        company_text = text_filter(company.text)
+        title_text = text_filter(title.text)
+        # if scrap_count.text == "스크랩":
+        #     scrap_count_text = "0"
+        # else:
+        #     scrap_count_text = text_filter(scrap_count.text)
+
+        # 경력, 학력, 근무형태, 급여, 근무일시, 근무지역 추출
+        # 필수사항, 우대사항, 직급/직책은 없는 경우 있긴 하지만 일단 추출함
+        # default: dict_keys(['경력', '학력', '근무형태', '급여', '근무일시', '근무지역'])
+        summary_dict = {}
+        summary_list = soup.select("div.jv_summary div.col dl")
+        for li in summary_list:
+            key = text_filter(li.select_one("dt").text)
+            dd_tag = li.select_one("dd")
+            dd_first_str = text_filter(str(next(dd_tag.stripped_strings)))
+            details = dd_tag.select("ul.toolTipTxt li")
+            details_str = ""
+            # 상세보기가 있는 경우
+            if details:
+                for detail in details:
+                    detail_key = text_filter(detail.select_one("span").text)
+                    detail_key = "".join(detail_key.split())
+                    detail_val = text_filter(detail.text[len(detail_key) :])
+                    if details_str == "":
+                        details_str += f"{detail_key}:{detail_val}"
+                    else:
+                        details_str += f"|{detail_key}:{detail_val}"
+            # 기본 텍스트가 없고, 상세보기만 있는 경우
+            if key == dd_first_str:
+                val = details_str
+            else:
+                val = text_filter(dd_tag.text)
+                # 기본 텍스트, 상세보기 둘 다 있는 경우
+                if details:
+                    details_origin_str = text_filter(
+                        li.select_one("dd").select_one("div.toolTipWrap").text
+                    )
+                    val = val[: -len(details_origin_str) + len(details) + 1]
+
+            summary_dict[key] = val
+
+        # 근무지역이 뒤에 지도 텍스트가 같이 들어와서 자름
+        if "근무지역" in summary_dict:
+            job_location_split_li = summary_dict["근무지역"].split()
+            if job_location_split_li[-1] == "지도":
+                job_location = " ".join(job_location_split_li[:-1])
+                summary_dict["근무지역"] = job_location_filter(job_location)
+
+        # 더 좋은 근무지 위치 정보가 있다면 업데이트
+        job_location = self.get_better_job_location(soup)
+        if job_location is not None:
+            summary_dict["근무지역"] = job_location_filter(job_location)
+        else:
+            self.logger.warning(f"Can't found job_location: {url}")
+
+        period_list = soup.select("dl.info_period dd")
+        # YYYY.MM.DD HH:MM 형식
+        start = text_filter(period_list[0].text)
+        # 마감일은 없는 경우 있음
+        if len(period_list) == 2:
+            end = text_filter(period_list[1].text)
+            deadline_date_time = datetime.strptime(end, "%Y.%m.%d %H:%M")
+            if self.current_date_time > deadline_date_time:
+                print("Already closed Position: {url}")
+                self.logger.warning("Already closed Position: {url}")
+                return None
+        else:
+            end = "채용시 마감"
+
+        # 연락처 추출
+        contact = self.get_contact_info(soup)
+        if contact is not None:
+            contact_len = len(contact)
+            if contact_len < 9 or contact_len > 20:
+                self.logger.warning(
+                    f"Contact information that may be an outlier has been detected | url: {url}"
+                )
+            summary_dict["연락처"] = contact_info_filter(contact)
+        else:
+            self.logger.warning(f"Can't found contact_info: {url}")
+
+        # 이미지 추출
+        # image_list = soup.select("div.jv_cont.jv_detail td img")
+        # print(image_list)
+        # print(len(image_list))
+
+        # 학력이 박사졸, 석사졸인 채용공고 제외
+        education = summary_dict.get("학력", "X")
+        if "석사" in education or "박사" in education:
+            self.logger.warning(f"PhD or Master's degree is not a target: {url}")
+            return None
+
+        data = {
+            # "id": uuid.uuid4(),
+            # "keyword": search_word,
+            "companyName": company_text,
+            "title": title_text,
+            "experience": experience_filter(summary_dict.get("경력", "X")),
+            "education": education_filter(education),
+            "jobType": job_type_filter(summary_dict.get("근무형태", "X")),
+            "salary": summary_dict.get("급여", "X"),
+            "jobLocation": summary_dict.get("근무지역", "X"),
+            "requirements": summary_dict.get("필수사항", "X"),
+            "preferences": summary_dict.get("우대사항", "X"),
+            "contact": summary_dict.get("연락처", "X"),
+            "start": start,
+            "deadline": end,
+            "url": url,
+            # "titleImageUrl": ,
+            # "companyId": ,
+            # "scrapCount": scrap_count_text,
+            # "details": ,
+            # "detailsImageUrl": ,
+        }
+
+        return data
 
     # 근무지 위치 파싱
     def get_better_job_location(self, soup):
@@ -240,6 +276,8 @@ class Saramin:
                     end_idx = td_text.find("ㆍ", start_idx + 10)
                     if end_idx == -1:
                         job_location = job_location_filter(td_text[start_idx:])
+                    # 잘못된 경우 있음, 중간에 공백이 많아서 다음 end_idx가 근무지역을 포함하지 않은 경우
+                    # -> 길이가 strip되어 짧아져서 버그가 나옴 -> 일단 데이터 파싱 중에 버그나면 저장안하도록 수정해놓음
                     else:
                         job_location = job_location_filter(td_text[start_idx:end_idx])
                     return job_location[7:]
@@ -299,15 +337,103 @@ class Saramin:
     def duplicate_check(self, data):
         for dt in self.data:
             if len(dt) > 0:
-                # duplicate_check = (dt["공고명"] == data["공고명"]) & (
-                #     dt["기업명"] == data["기업명"]
-                # )
+                # duplicate_check = (dt["companyName"] == data["companyName"]) & (
+                #     dt["title"] == data["title"]
+                # ) & (dt["url"]) == data["url"]
                 duplicate_check = (dt["companyName"] == data["companyName"]) & (
                     dt["title"] == data["title"]
-                )
+                ) | (dt["url"] == data["url"])
+
                 if duplicate_check.any():
                     return True
+
+        if self.old_data is not None and not self.old_data.empty:
+            duplicate_check = (self.old_data["companyName"] == data["companyName"]) & (
+                self.old_data["title"] == data["title"]
+            ) | (self.old_data["url"] == data["url"])
+
+            if duplicate_check.any():
+                return True
+
         return False
+
+    # 마감된 채용 공고인지 확인(회사가 직접 마감 시키는 경우)
+    def check_position_closed(self, url):
+        response = requests.get(url, headers=self.headers[0])
+        soup = BeautifulSoup(response.content, "lxml")
+
+        is_closed = soup.select_one("span.sri_btn_expired_apply")
+        if is_closed:
+            is_closed_text = text_filter(is_closed.text)
+            if is_closed_text == "접수마감":
+                return True
+
+        return False
+
+    # 마감된 채용 공고들 목록 반환
+    def get_closed_positions(self, positions_without_deadline):
+        closed_positions = set()
+        for position in positions_without_deadline:
+            id = position["id"]
+            url = position["url"]
+
+            if self.check_position_closed(url):
+                closed_positions.add(id)
+
+        self.logger.info(
+            f"Get closed positions from big-query | total: {len(closed_positions)}"
+        )
+        return closed_positions
+
+    def logUpdatedFieldInfo(self, data, updated_data, updated_fields):
+        log = f"position updated | url: {data['url']}"
+        for field in updated_fields:
+            log += (
+                f"\n   {field} field updated '{data[field]}' => '{updated_data[field]}'"
+            )
+        self.logger.info(log)
+
+    # 업데이트된 채용 공고인지 확인
+    def check_position_updated(self, url, position):
+        data = self.get_parsed_data(url)
+        if not data:
+            delete_position(position["id"])
+            return False
+
+        updated_fields = []
+        for key, val in data.items():
+            if val != position[key]:
+                # null인 경우 -> big-query에서는 ''로 저장하고, 크롤링은 None으로 저장됨
+                if val == "" and position[key] == None:
+                    continue
+
+                updated_fields.append(key)
+
+        if len(updated_fields) == 0:
+            return None, None
+
+        return data, updated_fields
+
+    # 업데이트된 채용 공고들 목록 반환
+    def get_updated_positions(self, positions):
+        updated_position_ids = set()
+        updated_positions = []
+
+        for position in positions:
+            id = position["id"]
+            url = position["url"]
+
+            updated_data, updated_fields = self.check_position_updated(url, position)
+            if updated_data:
+                self.logUpdatedFieldInfo(position, updated_data, updated_fields)
+                updated_position_ids.add(id)
+                updated_data["id"] = id
+                updated_positions.append(updated_data)
+
+        self.logger.info(
+            f"Get updated positions from big-query | total: {len(updated_position_ids)}"
+        )
+        return updated_position_ids, updated_positions
 
     # 데이터 Getter
     def get_data(self):
@@ -324,8 +450,8 @@ class Saramin:
             os.makedirs(self.save_dir)
         file_path = os.path.join(self.save_dir, file_name)
         df.to_csv(file_path, index=False, encoding="utf-8-sig")
-        # print(f'{file_name} is saved at {file_path}')
-        return file_path
+        self.logger.info(f"{file_name} is saved at {file_path}")
+        return file_name, file_path
 
     # 모든 데이터 csv로 저장
     def save_all_data_to_csv(self):
@@ -343,7 +469,8 @@ class Saramin:
         if len(result) == 0:
             return ""
         result.to_csv(file_path, index=False, encoding="utf-8-sig")
-        # print(f'{file_name} is saved at {file_path}')
+        self.logger.info(f"{file_name} is saved at {file_path}, len: {len(result)}")
+        print(f"{file_name} is saved at {file_path}, len: {len(result)}")
         return file_path
 
     # 결과 json으로 저장
@@ -354,5 +481,6 @@ class Saramin:
         file_path = os.path.join(self.save_dir, file_name)
         with open(file_path, "w", encoding="utf-8") as json_file:
             json.dump(self.data, json_file, ensure_ascii=False, indent="\t")
+        self.logger.info(f"{file_name} is saved at {file_path}")
         print(f"{file_name} is saved at {file_path}")
         return file_path

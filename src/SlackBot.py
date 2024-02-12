@@ -9,8 +9,10 @@ load_dotenv(verbose=True)
 
 import certifi
 import ssl
+
 ssl._create_default_https_context = ssl._create_unverified_context
 ssl_context = ssl.create_default_context(cafile=certifi.where())
+
 
 class SlackBot:
     def __init__(self):
