@@ -1,5 +1,6 @@
 # Use the official Python image as the base image
-FROM python:3.11
+FROM python:3.12.1
+RUN pip install --upgrade pip
 
 # Set the working directory
 WORKDIR /app

@@ -7,12 +7,18 @@ import time
 
 load_dotenv(verbose=True)
 
+import certifi
+import ssl
+
+ssl._create_default_https_context = ssl._create_unverified_context
+ssl_context = ssl.create_default_context(cafile=certifi.where())
+
 
 class SlackBot:
     def __init__(self):
         self.app = App(token=os.getenv("SLACK_BOT_TOKEN"))
         self.channel_id = os.getenv("SLACK_CHANNEL_ID")
-        self.client = WebClient(token=os.getenv("SLACK_BOT_TOKEN"))
+        self.client = WebClient(token=os.getenv("SLACK_BOT_TOKEN"), ssl=ssl_context)
         self.cnt = 1
 
     # 메시지 생성
