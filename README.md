@@ -1,6 +1,16 @@
 # TALLI notice bot(사람인 크롤링)
 
+<!-- ## 기능
+- 매일 22:00시에 사람인에서 임상 관련 직군 채용 공고 정보를 수집하고 bigquery에 저장합니다.
+- 마감되었거나 중복인 채용 공고는 삭제하고 수정된 공고는 업데이트합니다. -->
+
+## 기술 스택
+
+<img src="https://img.shields.io/badge/python-3776AB?style=for-the-badge&logo=python&logoColor=white"> <img src="https://img.shields.io/badge/beautifulSoup-3178C6?style=for-the-badge"> <img src="https://img.shields.io/badge/slack sdk-4A154B?style=for-the-badge&logo=slack&logoColor=white"> <img src="https://img.shields.io/badge/github actions-2088FF?style=for-the-badge&logo=githubactions&logoColor=white"> <img src="https://img.shields.io/badge/google cloud-4285F4?style=for-the-badge&logo=googlecloud&logoColor=white"> <img src="https://img.shields.io/badge/bigquery-669DF6?style=for-the-badge&logo=googlebigquery&logoColor=white">
+
 ## 사용 방법
+
+bigquery key.json 루트 경로에 위치해야함
 
 ### python 가상환경
 
